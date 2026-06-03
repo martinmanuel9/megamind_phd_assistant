@@ -1,0 +1,26 @@
+{
+  "name": "localopenbrainobsidian",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first PhD research assistant: an MCP server + RAG over a managed document repository that writes traceable notes into an Obsidian vault.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "typecheck": "tsc -b",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "mcp:dev": "npm run dev --workspace @lob/mcp-server",
+    "mcp:start": "npm run start --workspace @lob/mcp-server",
+    "setup": "npm run setup --workspace @lob/mcp-server"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

@@ -9,3 +9,9 @@ dist/
 build/
 .DS_Store
 .speckit/
+# Local runtime settings may contain secrets if placed inside the repo
+.localopenbrain/
+settings.json
+# TS build info
+*.tsbuildinfo
+.supabase/

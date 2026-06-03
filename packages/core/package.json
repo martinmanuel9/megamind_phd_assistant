@@ -1,0 +1,23 @@
+{
+  "name": "@lob/core",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./settings": "./src/settings.ts",
+    "./config": "./src/config.ts",
+    "./db": "./src/db/client.ts",
+    "./embeddings": "./src/embeddings/client.ts",
+    "./vault": "./src/vault/index.ts",
+    "./rag": "./src/rag/index.ts"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "node --test --import tsx ./src/**/*.test.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.10"
+  }
+}
