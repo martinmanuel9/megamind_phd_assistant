@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { MendeleyOverview } from "@/app/actions";
-import { getMendeleyOverview, runMendeleySync, saveMendeleyAutoSync, saveMendeleyPaths } from "@/app/actions";
+import type { MendeleyOverview, SchedulerStatus } from "@/app/actions";
+import { getMendeleyOverview, getSchedulerStatus, runMendeleySync, saveMendeleyAutoSync, saveMendeleyPaths, setBackgroundSync } from "@/app/actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,9 +20,18 @@ function Check({ ok, label }: { ok: boolean; label: string }) {
   );
 }
 
-export function MendeleyPanel({ initial }: { initial: MendeleyOverview }) {
+export function MendeleyPanel({ initial, sched }: { initial: MendeleyOverview; sched: SchedulerStatus }) {
   const router = useRouter();
   const [ov, setOv] = useState(initial);
+  const [schedState, setSchedState] = useState(sched);
+  const [bgMsg, setBgMsg] = useState<string | null>(null);
+
+  const toggleBg = () =>
+    start(async () => {
+      const r = await setBackgroundSync(!schedState.sync.installed);
+      setSchedState(r.status);
+      setBgMsg(r.ok ? null : r.error ?? "failed");
+    });
   const [dbPath, setDbPath] = useState(initial.dbPath ?? "");
   const [userfilesPath, setUserfilesPath] = useState(initial.userfilesPath ?? "");
   const [review, setReview] = useState(false);
@@ -36,6 +45,7 @@ export function MendeleyPanel({ initial }: { initial: MendeleyOverview }) {
     start(async () => {
       const o = await saveMendeleyAutoSync(Number(autoMin), autoReview);
       setOv(o);
+      setSchedState(await getSchedulerStatus());
       setAutoMsg(o.autoSyncMinutes > 0 ? `Auto-sync every ${o.autoSyncMinutes} min` : "Auto-sync off");
     });
 
@@ -147,7 +157,35 @@ export function MendeleyPanel({ initial }: { initial: MendeleyOverview }) {
               AI-review each new paper during auto-sync
             </label>
             {ov.autoSyncMinutes > 0 && (
-              <Badge variant="success">auto-sync on · every {ov.autoSyncMinutes} min{ov.autoSyncReview ? " · with AI review" : ""}</Badge>
+              <Badge variant="success">heartbeat: every {ov.autoSyncMinutes} min while MCP server runs</Badge>
+            )}
+          </div>
+
+          <div className="space-y-2 border-t border-border pt-4">
+            <div className="text-sm font-medium">Always-on (independent of the app)</div>
+            <p className="text-xs text-muted-foreground">
+              Installs a macOS launchd agent that runs the sync on your cadence even when the app
+              and MCP server are closed (survives reboot). Uses the cadence above.
+            </p>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                disabled={pending || !schedState.launchdAvailable || (!schedState.sync.installed && ov.autoSyncMinutes <= 0)}
+                onClick={toggleBg}
+              >
+                {pending && <Loader2 className="size-4 animate-spin" />}
+                {schedState.sync.installed ? "Disable background sync" : "Enable background sync"}
+              </Button>
+              {schedState.sync.installed && (
+                <Badge variant={schedState.sync.loaded ? "success" : "outline"}>
+                  {schedState.sync.loaded ? `running · every ${schedState.sync.intervalMinutes} min` : "installed"}
+                </Badge>
+              )}
+              {bgMsg && <span className="text-xs text-destructive">{bgMsg}</span>}
+            </div>
+            {!schedState.launchdAvailable && <p className="text-xs text-muted-foreground">launchd is macOS-only; not available here.</p>}
+            {!schedState.sync.installed && ov.autoSyncMinutes <= 0 && (
+              <p className="text-xs text-muted-foreground">Set a cadence above first.</p>
             )}
           </div>
         </CardContent>

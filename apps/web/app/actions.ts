@@ -11,14 +11,20 @@ import {
   git,
   initVault,
   loadSettings,
+  installMcpAgent,
+  installSyncAgent,
   markOnboarded,
   mendeleyOverview,
   notesCitingDocument,
   ragQuery,
   readNote,
+  removeMcpAgent,
+  removeSyncAgent,
+  schedulerStatus,
   syncMendeley,
   type MendeleyOverview,
   type MendeleySyncResult,
+  type SchedulerStatus,
   reviewDocument,
   mcpListening,
   mcpLogs,
@@ -38,7 +44,7 @@ import {
  * client. Each export is an async function (Next.js "use server" requirement).
  */
 
-export type { MendeleyOverview, MendeleySyncResult };
+export type { MendeleyOverview, MendeleySyncResult, SchedulerStatus };
 
 const MASK = "••••••••";
 
@@ -395,7 +401,41 @@ export async function saveMendeleyAutoSync(minutes: number, review: boolean): Pr
       autoSyncReview: review,
     },
   });
-  return mendeleyOverview(getConfig());
+  const config = getConfig();
+  // If the OS-level sync agent is installed, re-apply so the schedule matches.
+  if (schedulerStatus(config).sync.installed) {
+    try {
+      if ((config.settings.mendeley.autoSyncMinutes ?? 0) > 0) installSyncAgent(config);
+      else removeSyncAgent();
+    } catch { /* surfaced via scheduler status */ }
+  }
+  return mendeleyOverview(config);
+}
+
+// --- OS-level scheduling (launchd) ---
+
+export async function getSchedulerStatus(): Promise<SchedulerStatus> {
+  return schedulerStatus(getConfig());
+}
+
+export async function setBackgroundSync(enabled: boolean): Promise<{ ok: boolean; error?: string; status: SchedulerStatus }> {
+  try {
+    if (enabled) installSyncAgent(getConfig());
+    else removeSyncAgent();
+    return { ok: true, status: schedulerStatus(getConfig()) };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message, status: schedulerStatus(getConfig()) };
+  }
+}
+
+export async function setMcpAutoStart(enabled: boolean): Promise<{ ok: boolean; error?: string; status: SchedulerStatus }> {
+  try {
+    if (enabled) installMcpAgent();
+    else removeMcpAgent();
+    return { ok: true, status: schedulerStatus(getConfig()) };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message, status: schedulerStatus(getConfig()) };
+  }
 }
 
 export async function runMendeleySync(review = false): Promise<{ ok: boolean; result?: MendeleySyncResult; error?: string }> {

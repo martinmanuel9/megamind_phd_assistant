@@ -4,15 +4,24 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { mcpServerLogs, mcpServerStatus, startMcpServer, stopMcpServer, type McpServerView } from "@/app/actions";
+import { getSchedulerStatus, mcpServerLogs, mcpServerStatus, setMcpAutoStart, startMcpServer, stopMcpServer, type McpServerView, type SchedulerStatus } from "@/app/actions";
 import { Copy, Loader2, Play, RefreshCw, Square } from "lucide-react";
 
-export function McpControl({ initial, initialLogs }: { initial: McpServerView; initialLogs: string }) {
+export function McpControl({ initial, initialLogs, sched }: { initial: McpServerView; initialLogs: string; sched: SchedulerStatus }) {
   const [status, setStatus] = useState<McpServerView>(initial);
   const [logs, setLogs] = useState(initialLogs);
   const [pending, start] = useTransition();
   const [copied, setCopied] = useState(false);
+  const [schedState, setSchedState] = useState(sched);
+  const [autoMsg, setAutoMsg] = useState<string | null>(null);
   const logRef = useRef<HTMLPreElement>(null);
+
+  const toggleAutoStart = () =>
+    start(async () => {
+      const r = await setMcpAutoStart(!schedState.mcp.installed);
+      setSchedState(r.status);
+      setAutoMsg(r.ok ? null : r.error ?? "failed");
+    });
 
   // Poll status + logs every 3s.
   useEffect(() => {
@@ -86,6 +95,27 @@ export function McpControl({ initial, initialLogs }: { initial: McpServerView; i
               {copied && <div className="text-xs text-success">Copied</div>}
             </div>
           )}
+
+          <div className="space-y-2 border-t border-border pt-4">
+            <div className="text-sm font-medium">Auto-start on login</div>
+            <p className="text-xs text-muted-foreground">
+              Installs a launchd agent that starts this server on login and restarts it if it
+              exits — so its auto-sync heartbeat is always running.
+            </p>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" disabled={pending || !schedState.launchdAvailable} onClick={toggleAutoStart}>
+                {pending && <Loader2 className="size-4 animate-spin" />}
+                {schedState.mcp.installed ? "Disable auto-start" : "Enable auto-start"}
+              </Button>
+              {schedState.mcp.installed && (
+                <Badge variant={schedState.mcp.loaded ? "success" : "outline"}>
+                  {schedState.mcp.loaded ? "active" : "installed"}
+                </Badge>
+              )}
+              {autoMsg && <span className="text-xs text-destructive">{autoMsg}</span>}
+            </div>
+            {!schedState.launchdAvailable && <p className="text-xs text-muted-foreground">launchd is macOS-only; not available here.</p>}
+          </div>
         </CardContent>
       </Card>
 

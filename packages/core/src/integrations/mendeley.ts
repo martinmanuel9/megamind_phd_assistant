@@ -1,8 +1,9 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { settingsPath } from "../settings.js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ModelClient } from "../embeddings/client.js";
 import { type Config } from "../config.js";
@@ -174,6 +175,30 @@ export async function syncMendeley(
   const { dbPath, userfilesPath } = resolveMendeleyPaths(config);
   if (!dbPath || !existsSync(dbPath)) throw new Error("Mendeley database not found");
 
+  // Cross-process lock so the in-process heartbeat and a launchd sync (or two
+  // clicks) can't run concurrently. A stale lock (>15 min) is ignored.
+  const lock = join(dirname(settingsPath()), "mendeley-sync.lock");
+  if (existsSync(lock)) {
+    const ageMin = (Date.now() - statSync(lock).mtimeMs) / 60000;
+    if (ageMin < 15) throw new Error("a sync is already running");
+  }
+  writeFileSync(lock, String(process.pid));
+
+  try {
+    return await runSync(db, model, config, opts, dbPath, userfilesPath);
+  } finally {
+    rmSync(lock, { force: true });
+  }
+}
+
+async function runSync(
+  db: SupabaseClient,
+  model: ModelClient,
+  config: Config,
+  opts: { review?: boolean },
+  dbPath: string,
+  userfilesPath: string,
+): Promise<MendeleySyncResult> {
   const lib = readMendeleyLibrary(dbPath);
 
   const { data } = await db.from("documents").select("sha256").not("sha256", "is", null);

@@ -45,7 +45,7 @@ function isAlive(pid: number): boolean {
 }
 
 /** Find the monorepo root (nearest ancestor package.json with "workspaces"). */
-function findRepoRoot(start = process.cwd()): string {
+export function findRepoRoot(start = process.cwd()): string {
   let dir = start;
   for (let i = 0; i < 8; i++) {
     const pkg = join(dir, "package.json");
