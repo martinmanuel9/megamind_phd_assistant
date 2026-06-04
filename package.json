@@ -9,6 +9,7 @@
     "apps/*"
   ],
   "scripts": {
+    "start:app": "bash scripts/research-assistant.sh",
     "up": "bash scripts/up.sh",
     "down": "bash scripts/down.sh",
     "web": "npm run dev --workspace @lob/web",

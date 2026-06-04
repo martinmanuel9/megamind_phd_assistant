@@ -77,8 +77,13 @@ supabase/             config.toml (local stack) + migrations/0001_init.sql
 npm install
 ollama pull nomic-embed-text          # embeddings (768-dim)
 supabase start && supabase db reset   # local Postgres+pgvector+Storage + schema
-npm run up                            # Docker → Supabase → dashboard at :3000
+npm run start:app                     # Docker → Supabase → web, opens http://research-assistant
 ```
+
+`npm run start:app` (or double-click **`research-assistant.command`** on macOS) brings everything
+up and opens the app at a friendly hostname — **http://research-assistant** (a one-time `/etc/hosts`
+alias to 127.0.0.1; sudo once). Override with `RA_HOST` / `RA_PORT`, or `RA_HOST=localhost` to skip
+the alias. (`npm run up` is the plain `localhost:3000` variant.)
 
 First launch opens the **/onboarding** wizard (Supabase → Models → Vault → GitHub). The
 **Model advisor** (Setup) detects your hardware and pulls a suitable chat model with one click.
