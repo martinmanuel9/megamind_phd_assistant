@@ -4,8 +4,8 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "localopenbrainobsidian",
-  description: "PhD research assistant — traceable notes over a local document repository.",
+  title: "Megamind Phd Assistant",
+  description: "Megamind Phd Assistant — traceable notes over a local document repository.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

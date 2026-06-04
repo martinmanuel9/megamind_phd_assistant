@@ -101,8 +101,16 @@ else
   URL="http://${RA_HOST}:${RA_INTERNAL_PORT}"
 fi
 
-# 5. Build the web app on first run -------------------------------------------
-if [ ! -f apps/web/.next/BUILD_ID ]; then say "Building the web app (first run only)…"; npm run build --workspace @lob/web; fi
+# 5. Build the web app if missing or source changed since last build ----------
+NEED_BUILD=false
+if [ ! -f apps/web/.next/BUILD_ID ]; then
+  NEED_BUILD=true
+elif [ -n "$(find apps/web/app apps/web/components apps/web/lib packages/core/src \
+      apps/web/next.config.mjs apps/web/tailwind.config.ts apps/web/app/globals.css \
+      -newer apps/web/.next/BUILD_ID 2>/dev/null | head -1)" ]; then
+  NEED_BUILD=true
+fi
+if [ "$NEED_BUILD" = true ]; then say "Building the web app (changes detected)…"; npm run build --workspace @lob/web; fi
 
 # 6. Start web (bound to 0.0.0.0 so the alias + proxy reach it) ---------------
 export RA_HOST RA_PORT RA_INTERNAL_PORT   # consumed by next.config allowedOrigins

@@ -33,7 +33,7 @@ export default async function Dashboard() {
       <header className="mb-8 flex items-center gap-3">
         <BrainCircuit className="size-7 text-primary" />
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">localopenbrainobsidian</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Megamind Phd Assistant</h1>
           <p className="text-sm text-muted-foreground">
             PhD research assistant — traceable notes over a local document repository.
           </p>
