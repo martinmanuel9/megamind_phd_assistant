@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { DocumentDetail } from "@/app/actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,19 @@ export function DocumentViewer({ detail }: { detail: DocumentDetail }) {
   const [active, setActive] = useState<string | null>(null);
 
   const citedChunkIds = new Set(links.map((l) => l.chunk_id).filter(Boolean) as string[]);
+
+  // Honor deep links from search (e.g. /documents/<id>#chunk-<chunkId>): highlight
+  // and scroll to the targeted passage on load.
+  useEffect(() => {
+    const hash = window.location.hash;
+    const m = hash.match(/^#chunk-(.+)$/);
+    if (!m) return;
+    const id = m[1]!;
+    setActive(id);
+    requestAnimationFrame(() => {
+      document.getElementById(`chunk-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, []);
 
   const jumpTo = (chunkId: string | null) => {
     if (!chunkId) return;

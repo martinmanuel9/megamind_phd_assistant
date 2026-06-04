@@ -12,6 +12,7 @@ import {
   loadSettings,
   markOnboarded,
   notesCitingDocument,
+  ragQuery,
   reviewDocument,
   mcpListening,
   mcpLogs,
@@ -178,6 +179,46 @@ export async function reviewDocumentAction(
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }
+}
+
+export interface SearchResults {
+  passages: { documentId: string; documentTitle: string; chunkId: string; section: string | null; text: string; similarity: number }[];
+  thoughts: { content: string; similarity: number }[];
+}
+
+export async function semanticSearch(query: string): Promise<SearchResults> {
+  const config = getConfig();
+  if (!config.supabase.url || !config.supabase.serviceRoleKey || !query.trim()) {
+    return { passages: [], thoughts: [] };
+  }
+  const db = createServiceClient(config);
+  const model = createModelClient(config);
+
+  const hits = await ragQuery(db, model, query, { limit: 12, threshold: 0.2 });
+
+  let thoughts: SearchResults["thoughts"] = [];
+  try {
+    const emb = await model.embedOne(query, "query");
+    const { data } = await db.rpc("match_thoughts", { query_embedding: emb, match_threshold: 0.2, match_count: 5 });
+    thoughts = ((data ?? []) as { content: string; similarity: number }[]).map((t) => ({
+      content: t.content,
+      similarity: t.similarity,
+    }));
+  } catch {
+    // memory search is best-effort
+  }
+
+  return {
+    passages: hits.map((h) => ({
+      documentId: h.documentId,
+      documentTitle: h.documentTitle,
+      chunkId: h.chunkId,
+      section: h.section,
+      text: h.text,
+      similarity: h.similarity,
+    })),
+    thoughts,
+  };
 }
 
 export interface DocumentDetail {
