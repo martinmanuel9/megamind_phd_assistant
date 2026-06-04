@@ -4,7 +4,7 @@ import { doctor, getConfig, mcpStatus } from "@lob/core";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusRow } from "@/components/status-row";
-import { ArrowRight, Database, FileText, Server, Settings2, GitBranch, BrainCircuit, Search, NotebookPen } from "lucide-react";
+import { ArrowRight, Database, FileText, Server, Settings2, GitBranch, BrainCircuit, Search, NotebookPen, RefreshCw } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -102,6 +102,7 @@ export default async function Dashboard() {
         <NavCard href="/search" icon={<Search className="size-5" />} title="Search" desc="Semantic search across everything" />
         <NavCard href="/documents" icon={<FileText className="size-5" />} title="Documents" desc="Upload & manage your repository" />
         <NavCard href="/notes" icon={<NotebookPen className="size-5" />} title="Notes" desc="Read your literature notes" />
+        <NavCard href="/sync" icon={<RefreshCw className="size-5" />} title="Mendeley sync" desc="Import new papers from Mendeley" />
         <NavCard href="/server" icon={<Server className="size-5" />} title="MCP server" desc="Start, stop & view logs" />
         <NavCard href="/vault" icon={<GitBranch className="size-5" />} title="Vault & git" desc="Notes and GitHub sync" />
         <NavCard href="/setup" icon={<Settings2 className="size-5" />} title="Setup" desc="Supabase, vault, GitHub, models" />

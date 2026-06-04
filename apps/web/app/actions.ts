@@ -12,9 +12,13 @@ import {
   initVault,
   loadSettings,
   markOnboarded,
+  mendeleyOverview,
   notesCitingDocument,
   ragQuery,
   readNote,
+  syncMendeley,
+  type MendeleyOverview,
+  type MendeleySyncResult,
   reviewDocument,
   mcpListening,
   mcpLogs,
@@ -33,6 +37,8 @@ import {
  * here runs on the Node server; secrets and the filesystem never reach the
  * client. Each export is an async function (Next.js "use server" requirement).
  */
+
+export type { MendeleyOverview, MendeleySyncResult };
 
 const MASK = "••••••••";
 
@@ -362,6 +368,35 @@ export async function getNote(id: string): Promise<NoteContent | null> {
     content = `*Could not read note file: ${(e as Error).message}*`;
   }
   return { id: note.id, title: note.title, noteType: note.note_type, vaultPath: note.vault_path, content };
+}
+
+// --- Mendeley sync ---
+
+export async function getMendeleyOverview(): Promise<MendeleyOverview> {
+  return mendeleyOverview(getConfig());
+}
+
+export async function saveMendeleyPaths(input: { dbPath?: string; userfilesPath?: string }): Promise<MendeleyOverview> {
+  updateSettings({
+    mendeley: {
+      ...loadSettings().mendeley,
+      dbPath: input.dbPath?.trim() || undefined,
+      userfilesPath: input.userfilesPath?.trim() || undefined,
+    },
+  });
+  return mendeleyOverview(getConfig());
+}
+
+export async function runMendeleySync(review = false): Promise<{ ok: boolean; result?: MendeleySyncResult; error?: string }> {
+  try {
+    const config = getConfig();
+    const db = createServiceClient(config);
+    const model = createModelClient(config);
+    const result = await syncMendeley(db, model, config, { review });
+    return { ok: true, result };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
 }
 
 export async function listDocuments(): Promise<DocumentSummary[]> {

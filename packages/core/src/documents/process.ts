@@ -53,6 +53,7 @@ export interface UploadInput {
   published?: string;
   venue?: string;
   kind?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UploadResult {
@@ -97,6 +98,7 @@ export async function processDocumentUpload(
     storagePath,
     mimeType: input.mime,
     bytes: input.bytes,
+    metadata: input.metadata,
   });
 
   const ing = await ingestDocument(db, model, document.id, text);

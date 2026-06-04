@@ -55,12 +55,23 @@ export interface ModelSettings {
   chatModel: string;
 }
 
+export interface MendeleySettings {
+  enabled: boolean;
+  /** Path to the Mendeley Reference Manager SQLite DB (auto-detected if unset). */
+  dbPath?: string;
+  /** Path to Mendeley's userfiles folder of PDFs (auto-detected if unset). */
+  userfilesPath?: string;
+  lastSyncAt?: string;
+  lastResult?: { imported: number; skipped: number; failed: number; total: number };
+}
+
 export interface Settings {
   version: 1;
   supabase: SupabaseSettings;
   vault: VaultSettings;
   git: GitSettings;
   models: ModelSettings;
+  mendeley: MendeleySettings;
   /** Access key gating the MCP HTTP endpoint. Generated on first setup. */
   mcpAccessKey?: string;
   /** True once the setup flow has completed successfully at least once. */
@@ -98,6 +109,7 @@ export const DEFAULT_SETTINGS: Settings = {
     embedDim: 768,
     chatModel: "llama3.1:8b",
   },
+  mendeley: { enabled: false },
   onboarded: false,
 };
 
@@ -121,6 +133,7 @@ function mergeSettings(base: Settings, patch: Partial<Settings>): Settings {
     },
     git: { ...base.git, ...patch.git },
     models: { ...base.models, ...patch.models },
+    mendeley: { ...base.mendeley, ...patch.mendeley },
   };
 }
 
