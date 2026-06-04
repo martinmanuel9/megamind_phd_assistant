@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ModelClient } from "../embeddings/client.js";
@@ -96,6 +96,13 @@ async function persistNote(
   if (error) throw new Error(`note registration failed: ${error.message}`);
 
   return { noteId: data.id as string, relPath, absPath };
+}
+
+/** Read a note's raw Markdown from the vault (guarded, read-only). */
+export function readNote(config: Config, relPath: string): string {
+  const root = requireVaultRoot(config);
+  const abs = resolveInsideVault(root, relPath, { forWrite: false, writeDirs: writeDirsOf(config) });
+  return readFileSync(abs, "utf8");
 }
 
 // --- Source notes (one vault note per repository document) -------------------

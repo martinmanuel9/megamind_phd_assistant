@@ -14,6 +14,7 @@ import {
   markOnboarded,
   notesCitingDocument,
   ragQuery,
+  readNote,
   reviewDocument,
   mcpListening,
   mcpLogs,
@@ -312,6 +313,55 @@ export async function deleteDocument(id: string): Promise<{ ok: boolean; error?:
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }
+}
+
+export interface NoteSummary {
+  id: string;
+  title: string;
+  note_type: string;
+  vault_path: string;
+  topics: string[];
+  updated_at: string;
+}
+
+export async function listNotes(): Promise<NoteSummary[]> {
+  const config = getConfig();
+  if (!config.supabase.url || !config.supabase.serviceRoleKey) return [];
+  const db = createServiceClient(config);
+  const { data, error } = await db
+    .from("notes")
+    .select("id, title, note_type, vault_path, topics, updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(300);
+  if (error) return [];
+  return (data ?? []) as NoteSummary[];
+}
+
+export interface NoteContent {
+  id: string;
+  title: string;
+  noteType: string;
+  vaultPath: string;
+  content: string;
+}
+
+export async function getNote(id: string): Promise<NoteContent | null> {
+  const config = getConfig();
+  if (!config.supabase.url || !config.supabase.serviceRoleKey) return null;
+  const db = createServiceClient(config);
+  const { data: note } = await db
+    .from("notes")
+    .select("id, title, note_type, vault_path")
+    .eq("id", id)
+    .single();
+  if (!note) return null;
+  let content = "";
+  try {
+    content = readNote(config, note.vault_path);
+  } catch (e) {
+    content = `*Could not read note file: ${(e as Error).message}*`;
+  }
+  return { id: note.id, title: note.title, noteType: note.note_type, vaultPath: note.vault_path, content };
 }
 
 export async function listDocuments(): Promise<DocumentSummary[]> {
