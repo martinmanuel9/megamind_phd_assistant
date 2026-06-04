@@ -11,6 +11,7 @@ import {
   initVault,
   loadSettings,
   markOnboarded,
+  notesCitingDocument,
   reviewDocument,
   mcpListening,
   mcpLogs,
@@ -177,6 +178,62 @@ export async function reviewDocumentAction(
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }
+}
+
+export interface DocumentDetail {
+  document: {
+    id: string; title: string; authors: string[]; kind: string; status: string;
+    source_url: string | null; doi: string | null; published: string | null;
+    venue: string | null; created_at: string;
+  };
+  chunks: { id: string; ord: number; text: string; section: string | null; page: number | null }[];
+  links: { chunk_id: string | null; claim_text: string | null; quote: string | null; note_id: string; note_title: string; note_path: string }[];
+  citingNotes: { noteId: string; title: string; vaultPath: string; claims: number }[];
+}
+
+export async function documentDetail(id: string): Promise<DocumentDetail | null> {
+  const config = getConfig();
+  if (!config.supabase.url || !config.supabase.serviceRoleKey) return null;
+  const db = createServiceClient(config);
+
+  const { data: document } = await db
+    .from("documents")
+    .select("id, title, authors, kind, status, source_url, doi, published, venue, created_at")
+    .eq("id", id)
+    .single();
+  if (!document) return null;
+
+  const { data: chunks } = await db
+    .from("chunks")
+    .select("id, ord, text, section, page")
+    .eq("document_id", id)
+    .order("ord", { ascending: true });
+
+  const { data: rawLinks } = await db
+    .from("note_links")
+    .select("chunk_id, claim_text, quote, note_id, notes!inner(title, vault_path)")
+    .eq("document_id", id);
+
+  const links = ((rawLinks ?? []) as unknown as {
+    chunk_id: string | null; claim_text: string | null; quote: string | null;
+    note_id: string; notes: { title: string; vault_path: string };
+  }[]).map((l) => ({
+    chunk_id: l.chunk_id,
+    claim_text: l.claim_text,
+    quote: l.quote,
+    note_id: l.note_id,
+    note_title: l.notes.title,
+    note_path: l.notes.vault_path,
+  }));
+
+  const citingNotes = await notesCitingDocument(db, id);
+
+  return {
+    document: document as DocumentDetail["document"],
+    chunks: (chunks ?? []) as DocumentDetail["chunks"],
+    links,
+    citingNotes,
+  };
 }
 
 export async function listDocuments(): Promise<DocumentSummary[]> {

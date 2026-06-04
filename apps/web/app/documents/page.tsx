@@ -48,12 +48,12 @@ export default async function DocumentsPage() {
             <Card key={d.id}>
               <CardContent className="flex items-center gap-4 p-4">
                 <FileText className="size-4 shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-medium">{d.title}</div>
+                <Link href={`/documents/${d.id}`} className="min-w-0 flex-1 group">
+                  <div className="truncate text-sm font-medium group-hover:underline">{d.title}</div>
                   <div className="truncate text-xs text-muted-foreground">
                     {(d.authors ?? []).join(", ") || "—"} · {d.kind}
                   </div>
-                </div>
+                </Link>
                 <ReviewButton documentId={d.id} disabled={d.status !== "ingested"} />
                 <Badge variant={statusVariant[d.status] ?? "outline"}>{d.status}</Badge>
               </CardContent>
