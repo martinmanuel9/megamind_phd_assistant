@@ -58,6 +58,19 @@ export async function setChatModel(model: string): Promise<{ ok: boolean }> {
   return { ok: true };
 }
 
+export interface McpConnectionInfo {
+  host: string;
+  port: number;
+  accessKey: string;
+  url: string;
+}
+
+export async function getMcpConnectionInfo(): Promise<McpConnectionInfo> {
+  const key = ensureAccessKey();
+  const c = getConfig();
+  return { host: c.mcp.host, port: c.mcp.port, accessKey: key, url: `http://${c.mcp.host}:${c.mcp.port}/?key=${key}` };
+}
+
 const MASK = "••••••••";
 
 export async function fetchStatus(): Promise<DoctorReport> {
