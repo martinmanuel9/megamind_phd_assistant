@@ -1,11 +1,14 @@
 "use server";
 
 import {
+  answerWithRag,
   checkSupabase,
   createModelClient,
   createServiceClient,
   DOCUMENTS_BUCKET,
   doctor,
+  saveAnswerAsNote,
+  type RagAnswer,
   ensureAccessKey,
   getConfig,
   getHardwareAdvice,
@@ -56,6 +59,32 @@ export async function setChatModel(model: string): Promise<{ ok: boolean }> {
   const cur = loadSettings();
   updateSettings({ models: { ...cur.models, chatModel: model } });
   return { ok: true };
+}
+
+export type { RagAnswer };
+
+export async function ragAsk(question: string): Promise<RagAnswer> {
+  const config = getConfig();
+  if (!config.supabase.url || !config.supabase.serviceRoleKey || !question.trim()) {
+    return { answer: "Supabase isn't configured, or the question was empty.", sources: [] };
+  }
+  const db = createServiceClient(config);
+  const model = createModelClient(config);
+  return answerWithRag(db, model, config, { question });
+}
+
+export async function saveAnswer(
+  input: RagAnswer & { question: string },
+): Promise<{ ok: boolean; relPath?: string; links?: number; error?: string }> {
+  try {
+    const config = getConfig();
+    const db = createServiceClient(config);
+    const model = createModelClient(config);
+    const r = await saveAnswerAsNote(db, model, config, { question: input.question, answer: input.answer, sources: input.sources });
+    return { ok: true, relPath: r.relPath, links: r.linkCount };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
 }
 
 export interface McpConnectionInfo {

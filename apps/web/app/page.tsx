@@ -4,7 +4,7 @@ import { doctor, getConfig, mcpStatus } from "@lob/core";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusRow } from "@/components/status-row";
-import { ArrowRight, Database, FileText, Server, Settings2, GitBranch, BrainCircuit, Search, NotebookPen, RefreshCw, Plug } from "lucide-react";
+import { ArrowRight, Database, FileText, Server, Settings2, GitBranch, BrainCircuit, Search, NotebookPen, RefreshCw, Plug, Sparkles } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -99,6 +99,7 @@ export default async function Dashboard() {
 
       <h2 className="mb-3 mt-10 text-sm font-medium text-muted-foreground">Workspace</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <NavCard href="/ask" icon={<Sparkles className="size-5" />} title="Ask" desc="RAG chat grounded in your library" />
         <NavCard href="/search" icon={<Search className="size-5" />} title="Search" desc="Semantic search across everything" />
         <NavCard href="/documents" icon={<FileText className="size-5" />} title="Documents" desc="Upload & manage your repository" />
         <NavCard href="/notes" icon={<NotebookPen className="size-5" />} title="Notes" desc="Read your literature notes" />
