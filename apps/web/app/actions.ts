@@ -2,6 +2,7 @@
 
 import {
   checkSupabase,
+  createModelClient,
   createServiceClient,
   doctor,
   ensureAccessKey,
@@ -10,6 +11,7 @@ import {
   initVault,
   loadSettings,
   markOnboarded,
+  reviewDocument,
   mcpListening,
   mcpLogs,
   mcpStatus,
@@ -161,6 +163,20 @@ export async function stopMcpServer(): Promise<McpServerView> {
 
 export async function mcpServerLogs(lines = 200): Promise<string> {
   return mcpLogs(lines);
+}
+
+export async function reviewDocumentAction(
+  documentId: string,
+): Promise<{ ok: boolean; relPath?: string; links?: number; resolved?: number; claims?: number; error?: string }> {
+  try {
+    const config = getConfig();
+    const db = createServiceClient(config);
+    const model = createModelClient(config);
+    const r = await reviewDocument(db, model, config, { documentId });
+    return { ok: true, relPath: r.relPath, links: r.linkCount, resolved: r.resolvedChunks, claims: r.claimsExtracted };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
 }
 
 export async function listDocuments(): Promise<DocumentSummary[]> {

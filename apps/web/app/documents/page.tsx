@@ -4,6 +4,7 @@ import { listDocuments } from "@/app/actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { UploadDropzone } from "@/components/documents/upload-dropzone";
+import { ReviewButton } from "@/components/documents/review-button";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,7 @@ export default async function DocumentsPage() {
                     {(d.authors ?? []).join(", ") || "—"} · {d.kind}
                   </div>
                 </div>
+                <ReviewButton documentId={d.id} disabled={d.status !== "ingested"} />
                 <Badge variant={statusVariant[d.status] ?? "outline"}>{d.status}</Badge>
               </CardContent>
             </Card>
