@@ -32,30 +32,9 @@ document repository with RAG.
 
 ## Architecture
 
-```text
-  Your browser ──┐
-                 ├──▶  core engine  ──┬──▶  Ollama          (embeddings + chat)
-  MCP clients  ──┘                    ├──▶  Obsidian vault  (.md + git)
-  (Perplexity / Claude /              └──▶  Supabase        (documents → chunks → notes, Storage)
-   Codex / Cursor)                     ▲
-            Mendeley library  ─────────┘   (incremental sync)
-```
+![Architecture](docs/diagrams/architecture.png)
 
-<details><summary>Same diagram in Mermaid (renders on GitHub / Obsidian)</summary>
-
-```mermaid
-flowchart TD
-  user["Your browser"] --> web["Megamind web app"]
-  clients["Perplexity / Claude / Codex / Cursor"] -->|MCP| mcp["MCP server"]
-  web -->|server actions| core["core engine"]
-  mcp --> core
-  core -->|embeddings and chat| ollama["Ollama (local models)"]
-  core -->|traceable notes and git| vault["Obsidian vault"]
-  core -->|documents, chunks, notes| supa["Supabase + pgvector + Storage"]
-  mendeley["Mendeley library"] -->|incremental sync| core
-```
-
-</details>
+<sub>Diagram source: [`docs/diagrams/architecture.mmd`](docs/diagrams/architecture.mmd) · regenerate with `npm run diagrams`.</sub>
 
 The traceability spine is `documents → chunks → note_links ← notes` (see
 `supabase/migrations/0001_init.sql`). The same `@lob/core` engine powers the web UI, the MCP
@@ -115,25 +94,7 @@ CLIs: `npm run setup` (health check) · `npm run ingest -- "<dir>" --mendeley` (
 
 The everyday flow — add sources, turn them into traceable notes, then search and cite:
 
-```text
-Set up ──▶ Add documents ──▶ Ingest ──▶ AI review / Ask ──▶ Traceable note ──▶ Search · cite · sync
-(Supabase,   (upload or       (chunk +    (local model        (in Obsidian)      (to GitHub)
- vault,        Mendeley)        embed)      + RAG)
- model)
-```
-
-<details><summary>Same flow in Mermaid (renders on GitHub / Obsidian)</summary>
-
-```mermaid
-flowchart LR
-  A["Set up<br/>Supabase, vault, model"] --> B["Add documents<br/>upload or Mendeley sync"]
-  B --> C["Ingest<br/>chunk + embed"]
-  C --> D["AI review or Ask<br/>local model + RAG"]
-  D --> E["Traceable note<br/>in Obsidian"]
-  E --> F["Search, cite,<br/>sync to GitHub"]
-```
-
-</details>
+![Process flow](docs/diagrams/process-flow.png)
 
 1. **Set up** (`/onboarding` on first launch, or `/setup`): connect Supabase, pick your vault,
    and let the **Model advisor** pull a local chat model that fits your machine.

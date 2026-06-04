@@ -1,0 +1,6 @@
+flowchart LR
+  A["Set up<br/>Supabase, vault, model"] --> B["Add documents<br/>upload or Mendeley sync"]
+  B --> C["Ingest<br/>chunk + embed"]
+  C --> D["AI review or Ask<br/>local model + RAG"]
+  D --> E["Traceable note<br/>in Obsidian"]
+  E --> F["Search, cite,<br/>sync to GitHub"]

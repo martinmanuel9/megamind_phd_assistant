@@ -20,7 +20,8 @@
     "test": "npm run test --workspaces --if-present",
     "mcp:dev": "npm run dev --workspace @lob/mcp-server",
     "mcp:start": "npm run start --workspace @lob/mcp-server",
-    "setup": "npm run setup --workspace @lob/mcp-server"
+    "setup": "npm run setup --workspace @lob/mcp-server",
+    "diagrams": "bash scripts/diagrams.sh"
   },
   "engines": {
     "node": ">=20"

@@ -1,0 +1,9 @@
+flowchart TD
+  user["Your browser"] --> web["Megamind web app"]
+  clients["Perplexity / Claude / Codex / Cursor"] -->|MCP| mcp["MCP server"]
+  web -->|server actions| core["core engine"]
+  mcp --> core
+  core -->|embeddings and chat| ollama["Ollama (local models)"]
+  core -->|traceable notes and git| vault["Obsidian vault"]
+  core -->|documents, chunks, notes| supa["Supabase + pgvector + Storage"]
+  mendeley["Mendeley library"] -->|incremental sync| core
