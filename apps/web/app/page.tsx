@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { doctor, getConfig } from "@lob/core";
+import { doctor, getConfig, mcpStatus } from "@lob/core";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusRow } from "@/components/status-row";
@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 export default async function Dashboard() {
   const report = await doctor();
   const config = getConfig();
+  const mcp = mcpStatus();
 
   const supaDetail = !report.supabase.ok
     ? report.supabase.reason === "missing-credentials"
@@ -71,29 +72,34 @@ export default async function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Server className="size-4" /> MCP connection
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Server className="size-4" /> MCP connection
+              </CardTitle>
+              <Badge variant={mcp.running ? "success" : "destructive"}>
+                {mcp.running ? "running" : "stopped"}
+              </Badge>
+            </div>
             <CardDescription>Point Perplexity / Claude / your client here.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="rounded-md bg-secondary/50 p-3 font-mono text-xs break-all">
-              http://{config.mcp.host}:{config.mcp.port}?key=
+              http://{config.mcp.host}:{mcp.port}?key=
               {config.mcp.accessKey ? "•••• (set)" : "(generate in Setup)"}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Start the server with <code className="font-mono">npm run mcp:dev</code>. Process
-              start/stop from the UI is coming in this phase.
-            </p>
+            <Link href="/server" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+              Start / stop & view logs <ArrowRight className="size-3.5" />
+            </Link>
           </CardContent>
         </Card>
       </div>
 
       <h2 className="mb-3 mt-10 text-sm font-medium text-muted-foreground">Workspace</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <NavCard href="/setup" icon={<Settings2 className="size-5" />} title="Setup" desc="Supabase, vault, GitHub, models" />
         <NavCard href="/documents" icon={<FileText className="size-5" />} title="Documents" desc="Upload & manage your repository" />
+        <NavCard href="/server" icon={<Server className="size-5" />} title="MCP server" desc="Start, stop & view logs" />
         <NavCard href="/vault" icon={<GitBranch className="size-5" />} title="Vault & git" desc="Notes and GitHub sync" />
+        <NavCard href="/setup" icon={<Settings2 className="size-5" />} title="Setup" desc="Supabase, vault, GitHub, models" />
       </div>
     </main>
   );

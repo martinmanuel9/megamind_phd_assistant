@@ -10,9 +10,15 @@ import {
   initVault,
   loadSettings,
   markOnboarded,
+  mcpListening,
+  mcpLogs,
+  mcpStatus,
   redactSettings,
+  startMcp,
+  stopMcp,
   updateSettings,
   type DoctorReport,
+  type McpStatus,
   type Settings,
 } from "@lob/core";
 
@@ -121,6 +127,40 @@ export interface DocumentSummary {
   kind: string;
   status: string;
   created_at: string;
+}
+
+export interface McpServerView extends McpStatus {
+  listening: boolean;
+  accessKey?: string;
+  url?: string;
+}
+
+export async function mcpServerStatus(): Promise<McpServerView> {
+  const status = mcpStatus();
+  const listening = status.running ? await mcpListening() : false;
+  const config = getConfig();
+  return {
+    ...status,
+    listening,
+    accessKey: config.mcp.accessKey,
+    url: `http://${config.mcp.host}:${status.port}`,
+  };
+}
+
+export async function startMcpServer(): Promise<McpServerView> {
+  startMcp();
+  // Give it a moment to bind the port before reporting.
+  await new Promise((r) => setTimeout(r, 1200));
+  return mcpServerStatus();
+}
+
+export async function stopMcpServer(): Promise<McpServerView> {
+  stopMcp();
+  return mcpServerStatus();
+}
+
+export async function mcpServerLogs(lines = 200): Promise<string> {
+  return mcpLogs(lines);
 }
 
 export async function listDocuments(): Promise<DocumentSummary[]> {
