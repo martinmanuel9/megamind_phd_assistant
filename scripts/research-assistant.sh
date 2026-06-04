@@ -1,33 +1,34 @@
 #!/usr/bin/env bash
 # Research Assistant launcher: Docker → local Supabase → web app → browser,
-# served at a clean hostname (default http://research-assistant via a port-80
-# reverse proxy to a unique internal port).
+# served at a clean hostname over HTTPS with a local Caddy cert by default
+# (https://research-assistant). Config comes from .env (see .env.example) and
+# can be overridden inline.
 #
-#   bash scripts/research-assistant.sh
+#   npm run start:app           # or: bash scripts/research-assistant.sh
 #
-# Env overrides:
-#   RA_HOST           hostname alias (default research-assistant)
-#   RA_PORT           public URL port (default 80; <1024 uses a caddy proxy)
-#   RA_INTERNAL_PORT  port the web app actually binds (default 8788)
-#   RA_HOST=localhost skips the /etc/hosts alias.
+# Knobs (env or .env): RA_HOST, RA_SCHEME (https|http), RA_PORT, RA_INTERNAL_PORT.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# Load .env if present (launcher config + any env overrides).
+if [ -f .env ]; then set -a; . ./.env; set +a; fi
+
 RA_HOST="${RA_HOST:-research-assistant}"
-RA_PORT="${RA_PORT:-80}"
+RA_SCHEME="${RA_SCHEME:-https}"
 RA_INTERNAL_PORT="${RA_INTERNAL_PORT:-8788}"
 LOG="${TMPDIR:-/tmp}/research-assistant-web.log"
 CADDYFILE="${TMPDIR:-/tmp}/research-assistant.Caddyfile"
 
 say() { printf "\033[1;36m▸ %s\033[0m\n" "$*"; }
 
-# Decide whether we need a privileged reverse proxy. For non-privileged public
-# ports we just bind the web app there directly.
-NEED_PROXY=false
-if [ "$RA_PORT" -lt 1024 ] && [ "$RA_PORT" != "$RA_INTERNAL_PORT" ]; then
+# Proxy decision: HTTPS always needs Caddy (TLS termination); HTTP only for a
+# privileged public port.
+if [ "$RA_SCHEME" = "https" ]; then
+  RA_PORT="${RA_PORT:-443}"
   NEED_PROXY=true
 else
-  RA_INTERNAL_PORT="$RA_PORT"
+  RA_PORT="${RA_PORT:-80}"
+  if [ "$RA_PORT" -lt 1024 ] && [ "$RA_PORT" != "$RA_INTERNAL_PORT" ]; then NEED_PROXY=true; else RA_INTERNAL_PORT="$RA_PORT"; NEED_PROXY=false; fi
 fi
 
 # 1. Docker -------------------------------------------------------------------
@@ -51,11 +52,24 @@ if [ "$RA_HOST" != "localhost" ] && [ "$RA_HOST" != "127.0.0.1" ]; then
   fi
 fi
 
-# 4. Reverse proxy on the privileged public port (caddy, sudo) ----------------
+# 4. Caddy reverse proxy (TLS for https, or privileged-port forward) ----------
 PROXY_OK=false
 if [ "$NEED_PROXY" = true ]; then
   if command -v caddy >/dev/null 2>&1; then
-    cat > "$CADDYFILE" <<EOF
+    if [ "$RA_SCHEME" = "https" ]; then
+      # skip_install_trust keeps `caddy start` from blocking on a keychain prompt;
+      # we install the CA explicitly via `caddy trust` once it's up.
+      cat > "$CADDYFILE" <<EOF
+{
+	skip_install_trust
+}
+${RA_HOST}:${RA_PORT} {
+	tls internal
+	reverse_proxy 127.0.0.1:${RA_INTERNAL_PORT}
+}
+EOF
+    else
+      cat > "$CADDYFILE" <<EOF
 {
 	auto_https off
 }
@@ -63,20 +77,26 @@ http://${RA_HOST}:${RA_PORT} {
 	reverse_proxy 127.0.0.1:${RA_INTERNAL_PORT}
 }
 EOF
-    say "Starting reverse proxy :${RA_PORT} → :${RA_INTERNAL_PORT} (caddy, sudo)…"
+    fi
+    say "Starting reverse proxy (caddy, sudo): ${RA_SCHEME} :${RA_PORT} → :${RA_INTERNAL_PORT}…"
     sudo caddy stop >/dev/null 2>&1 || true
     if sudo caddy start --config "$CADDYFILE" --adapter caddyfile >/dev/null 2>&1; then
       PROXY_OK=true
+      # Install Caddy's local CA into the system trust store (best-effort) so the
+      # browser trusts the https cert without warnings.
+      [ "$RA_SCHEME" = "https" ] && sudo caddy trust >/dev/null 2>&1 || true
     fi
   fi
   if [ "$PROXY_OK" != true ]; then
-    echo "Reverse proxy unavailable (need caddy + sudo). Serving directly on :${RA_INTERNAL_PORT}."
+    echo "Reverse proxy unavailable (need caddy + sudo). Falling back to http://${RA_HOST}:${RA_INTERNAL_PORT}."
+    RA_SCHEME="http"
   fi
 fi
 
-# Compute the URL the user should open.
+# Compute the URL to open.
 if [ "$NEED_PROXY" = true ] && [ "$PROXY_OK" = true ]; then
-  if [ "$RA_PORT" = "80" ]; then URL="http://${RA_HOST}"; else URL="http://${RA_HOST}:${RA_PORT}"; fi
+  DEFAULT_PORT=$([ "$RA_SCHEME" = "https" ] && echo 443 || echo 80)
+  if [ "$RA_PORT" = "$DEFAULT_PORT" ]; then URL="${RA_SCHEME}://${RA_HOST}"; else URL="${RA_SCHEME}://${RA_HOST}:${RA_PORT}"; fi
 else
   URL="http://${RA_HOST}:${RA_INTERNAL_PORT}"
 fi

@@ -77,17 +77,21 @@ supabase/             config.toml (local stack) + migrations/0001_init.sql
 npm install
 ollama pull nomic-embed-text          # embeddings (768-dim)
 supabase start && supabase db reset   # local Postgres+pgvector+Storage + schema
-npm run start:app                     # Docker → Supabase → web, opens http://research-assistant
+npm run start:app                     # Docker → Supabase → web, opens https://research-assistant
 ```
 
 `npm run start:app` (or double-click **`research-assistant.command`** on macOS) brings everything
-up and opens the app at a clean hostname — **http://research-assistant**. It maps
-`research-assistant → 127.0.0.1` in `/etc/hosts` (one-time sudo), runs the web app on a unique
-internal port (`8788`), and fronts it with a [Caddy](https://caddyserver.com) reverse proxy on
-port 80 (`sudo caddy`, so Node never runs as root). If Caddy/sudo isn't available it falls back to
-`http://research-assistant:8788`. Override with `RA_HOST` / `RA_PORT` / `RA_INTERNAL_PORT`, or
-`RA_HOST=localhost`. (`npm run up` is the plain `localhost:3000` variant; `npm run down` stops
-Supabase + proxy.)
+up and opens the app at a clean hostname over HTTPS — **https://research-assistant**. It:
+
+- maps `research-assistant → 127.0.0.1` in `/etc/hosts` (one-time sudo),
+- runs the web app on a unique internal port (`8788`),
+- fronts it with a [Caddy](https://caddyserver.com) reverse proxy that terminates **TLS with a
+  locally-trusted cert** (`tls internal` + `caddy trust`), so the browser shows a valid padlock —
+  no Node ever runs as root.
+
+If Caddy/sudo isn't available it falls back to `http://research-assistant:8788`. Configure via
+`.env` (`RA_HOST`, `RA_SCHEME=https|http`, `RA_PORT`, `RA_INTERNAL_PORT`; see `.env.example`) or
+inline. (`npm run up` is the plain `localhost:3000` variant; `npm run down` stops Supabase + proxy.)
 
 First launch opens the **/onboarding** wizard (Supabase → Models → Vault → GitHub). The
 **Model advisor** (Setup) detects your hardware and pulls a suitable chat model with one click.
