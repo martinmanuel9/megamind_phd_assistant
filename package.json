@@ -9,6 +9,9 @@
     "apps/*"
   ],
   "scripts": {
+    "up": "bash scripts/up.sh",
+    "down": "bash scripts/down.sh",
+    "web": "npm run dev --workspace @lob/web",
     "typecheck": "tsc -b",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",

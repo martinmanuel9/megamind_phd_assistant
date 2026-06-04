@@ -87,6 +87,18 @@ supabase/migrations/  schema (vector(768))
 7. **Connect a client** (Perplexity/Claude/etc.) to
    `http://127.0.0.1:8787?key=<access-key>`.
 
+### Daily use
+
+Once set up, a single command boots everything (Docker → local Supabase → web app):
+
+```bash
+npm run up      # starts Supabase + the dashboard at http://localhost:3000
+npm run down    # stops local Supabase
+```
+
+Start/stop the MCP server itself from the dashboard (**/server**). First launch
+drops a brand-new user into a guided **/onboarding** wizard automatically.
+
 ## MCP tools
 
 | Tool | Purpose |
