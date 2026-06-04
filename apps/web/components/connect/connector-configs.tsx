@@ -25,10 +25,10 @@ const CLIENTS: Client[] = [
     lang: "json",
     config: (url) => `{
   "mcpServers": {
-    "localopenbrain": { "type": "http", "url": "${url}" }
+    "megamind": { "type": "http", "url": "${url}" }
   }
 }`,
-    cli: (url) => `claude mcp add --transport http localopenbrain "${url}"`,
+    cli: (url) => `claude mcp add --transport http megamind "${url}"`,
   },
   {
     id: "claude-desktop",
@@ -38,7 +38,7 @@ const CLIENTS: Client[] = [
     note: "Desktop is stdio-only, so it bridges through mcp-remote. Restart Claude Desktop after saving.",
     config: (url) => `{
   "mcpServers": {
-    "localopenbrain": {
+    "megamind": {
       "command": "npx",
       "args": ["-y", "mcp-remote", "${url}"]
     }
@@ -52,7 +52,7 @@ const CLIENTS: Client[] = [
     lang: "json",
     config: (url) => `{
   "mcpServers": {
-    "localopenbrain": { "url": "${url}" }
+    "megamind": { "url": "${url}" }
   }
 }`,
   },
@@ -62,7 +62,7 @@ const CLIENTS: Client[] = [
     location: "~/.codex/config.toml",
     lang: "toml",
     note: "stdio bridge via mcp-remote.",
-    config: (url) => `[mcp_servers.localopenbrain]
+    config: (url) => `[mcp_servers.megamind]
 command = "npx"
 args = ["-y", "mcp-remote", "${url}"]`,
   },

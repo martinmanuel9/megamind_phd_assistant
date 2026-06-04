@@ -10,7 +10,7 @@ const ok = (b: boolean | undefined) => (b ? "✅" : "❌");
 const report = await doctor();
 const config = getConfig();
 
-console.log("\nlocalopenbrainobsidian — setup check\n");
+console.log("\nMegamind — setup check\n");
 console.log(`settings file: ${settingsPath()}`);
 console.log(`onboarded: ${ok(report.onboarded)}\n`);
 

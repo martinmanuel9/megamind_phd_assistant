@@ -25,7 +25,7 @@ import {
 } from "@lob/core";
 
 /**
- * localopenbrainobsidian MCP server.
+ * megamind MCP server.
  *
  * Exposes the research-assistant toolset to any MCP client (Perplexity, Claude,
  * Codex, your own frontend). Config is read fresh per request from the settings
@@ -54,7 +54,7 @@ function guard<T extends unknown[]>(fn: (...args: T) => Promise<ReturnType<typeo
   };
 }
 
-const server = new McpServer({ name: "localopenbrainobsidian", version: "0.1.0" });
+const server = new McpServer({ name: "megamind", version: "0.1.0" });
 
 // --- Memory (second brain) ---------------------------------------------------
 
@@ -396,9 +396,9 @@ const key = ensureAccessKey();
 const { port, host } = config.mcp;
 
 serve({ fetch: app.fetch, port, hostname: host }, (info) => {
-  console.log(`[localopenbrainobsidian] MCP server on http://${host}:${info.port}`);
-  console.log(`[localopenbrainobsidian] access key: ${key}`);
-  console.log(`[localopenbrainobsidian] connect clients to: http://${host}:${info.port}?key=${key}`);
+  console.log(`[megamind] MCP server on http://${host}:${info.port}`);
+  console.log(`[megamind] access key: ${key}`);
+  console.log(`[megamind] connect clients to: http://${host}:${info.port}?key=${key}`);
 });
 
 // --- Mendeley auto-sync heartbeat ---
