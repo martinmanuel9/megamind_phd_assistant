@@ -81,9 +81,13 @@ npm run start:app                     # Docker → Supabase → web, opens http:
 ```
 
 `npm run start:app` (or double-click **`research-assistant.command`** on macOS) brings everything
-up and opens the app at a friendly hostname — **http://research-assistant** (a one-time `/etc/hosts`
-alias to 127.0.0.1; sudo once). Override with `RA_HOST` / `RA_PORT`, or `RA_HOST=localhost` to skip
-the alias. (`npm run up` is the plain `localhost:3000` variant.)
+up and opens the app at a clean hostname — **http://research-assistant**. It maps
+`research-assistant → 127.0.0.1` in `/etc/hosts` (one-time sudo), runs the web app on a unique
+internal port (`8788`), and fronts it with a [Caddy](https://caddyserver.com) reverse proxy on
+port 80 (`sudo caddy`, so Node never runs as root). If Caddy/sudo isn't available it falls back to
+`http://research-assistant:8788`. Override with `RA_HOST` / `RA_PORT` / `RA_INTERNAL_PORT`, or
+`RA_HOST=localhost`. (`npm run up` is the plain `localhost:3000` variant; `npm run down` stops
+Supabase + proxy.)
 
 First launch opens the **/onboarding** wizard (Supabase → Models → Vault → GitHub). The
 **Model advisor** (Setup) detects your hardware and pulls a suitable chat model with one click.
