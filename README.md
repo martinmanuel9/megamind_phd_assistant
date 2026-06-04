@@ -34,17 +34,14 @@ document repository with RAG.
 
 ```mermaid
 flowchart TD
-  subgraph UI["Next.js front end (control plane)"]
-    direction LR
-    setup[Setup / Onboarding] --- ask[Ask · Search] --- docs[Documents · Notes] --- sync[Mendeley sync] --- connect[Connect clients] --- server[MCP server]
-  end
-  UI -->|server actions| core["@lob/core (server-only engine)"]
-  ext[Perplexity / Claude / Codex / Cursor] -->|MCP| mcp["MCP server (Node)"]
+  user["Your browser"] --> web["Megamind web app"]
+  clients["Perplexity / Claude / Codex / Cursor"] -->|MCP| mcp["MCP server"]
+  web -->|server actions| core["core engine"]
   mcp --> core
-  core -->|embeddings + chat| ollama[Ollama · nomic-embed-text / qwen2.5]
-  core -->|traceable .md + git| vault[(Obsidian vault)]
-  core --> supa[(Supabase: documents → chunks pgvector → note_links ← notes · thoughts · Storage)]
-  mendeley[(Mendeley library)] -->|incremental sync| core
+  core -->|embeddings and chat| ollama["Ollama (local models)"]
+  core -->|traceable notes and git| vault["Obsidian vault"]
+  core -->|documents, chunks, notes| supa["Supabase + pgvector + Storage"]
+  mendeley["Mendeley library"] -->|incremental sync| core
 ```
 
 The traceability spine is `documents → chunks → note_links ← notes` (see
@@ -100,6 +97,33 @@ First launch opens the **/onboarding** wizard (Supabase → Models → Vault →
 
 CLIs: `npm run setup` (health check) · `npm run ingest -- "<dir>" --mendeley` (batch import) ·
 `npm run sync` (one-shot Mendeley sync) · `npm run mcp:dev` (MCP server).
+
+## How to use
+
+The everyday flow — add sources, turn them into traceable notes, then search and cite:
+
+```mermaid
+flowchart LR
+  A["Set up<br/>Supabase, vault, model"] --> B["Add documents<br/>upload or Mendeley sync"]
+  B --> C["Ingest<br/>chunk + embed"]
+  C --> D["AI review or Ask<br/>local model + RAG"]
+  D --> E["Traceable note<br/>in Obsidian"]
+  E --> F["Search, cite,<br/>sync to GitHub"]
+```
+
+1. **Set up** (`/onboarding` on first launch, or `/setup`): connect Supabase, pick your vault,
+   and let the **Model advisor** pull a local chat model that fits your machine.
+2. **Add documents**: drag PDFs/Word/Markdown into **`/documents`**, or pull your reference library
+   in **`/sync`** (Mendeley). Each is parsed, chunked, and embedded automatically.
+3. **Turn sources into notes**: on a document hit **AI review** to generate a literature note where
+   every claim links to its exact source passage — or use **`/ask`** to question your whole library
+   and **Save as note**.
+4. **Find & reuse**: **`/search`** ranks passages semantically; click a result to jump to the exact
+   passage. **`/notes`** reads your generated notes. **`/vault`** commits + syncs them to GitHub.
+5. **Use from your AI tools**: start the server in **`/server`**, grab a config from **`/connect`**,
+   and Perplexity/Claude/Codex can call the same tools.
+
+**Full walkthrough:** see **[docs/USAGE.md](docs/USAGE.md)**.
 
 ## Web routes
 
