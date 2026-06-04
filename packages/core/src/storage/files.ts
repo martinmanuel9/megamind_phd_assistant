@@ -19,7 +19,7 @@ export async function ensureDocumentsBucket(db: SupabaseClient): Promise<void> {
   if (buckets?.some((b) => b.name === DOCUMENTS_BUCKET)) return;
   const { error: createErr } = await db.storage.createBucket(DOCUMENTS_BUCKET, {
     public: false,
-    fileSizeLimit: "50MiB",
+    fileSizeLimit: "50MB",
   });
   // Tolerate a race where another process created it first.
   if (createErr && !/already exists/i.test(createErr.message)) {

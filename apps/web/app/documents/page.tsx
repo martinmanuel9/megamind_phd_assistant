@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ArrowLeft, FileText, UploadCloud } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import { listDocuments } from "@/app/actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { UploadDropzone } from "@/components/documents/upload-dropzone";
 
 export const dynamic = "force-dynamic";
 
@@ -20,14 +21,13 @@ export default async function DocumentsPage() {
       <Link href="/" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" /> Dashboard
       </Link>
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Documents</h1>
-          <p className="text-sm text-muted-foreground">{docs.length} in your repository</p>
-        </div>
-        <Badge variant="outline" className="gap-1.5">
-          <UploadCloud className="size-3.5" /> Upload — next
-        </Badge>
+      <div className="mb-6">
+        <h1 className="text-xl font-semibold tracking-tight">Documents</h1>
+        <p className="text-sm text-muted-foreground">{docs.length} in your repository</p>
+      </div>
+
+      <div className="mb-6">
+        <UploadDropzone />
       </div>
 
       {docs.length === 0 ? (
@@ -36,8 +36,8 @@ export default async function DocumentsPage() {
             <FileText className="size-8 text-muted-foreground" />
             <p className="text-sm font-medium">No documents yet</p>
             <p className="max-w-sm text-xs text-muted-foreground">
-              Register documents via the MCP tools today (register_document → ingest_document).
-              Drag-and-drop upload with PDF/docx extraction lands in the next step.
+              Upload a PDF, Word doc, or text file above — it&apos;s parsed, embedded, and added
+              to your repository automatically.
             </p>
           </CardContent>
         </Card>

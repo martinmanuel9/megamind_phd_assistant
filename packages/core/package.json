@@ -18,6 +18,8 @@
     "test": "node --test --import tsx ./src/**/*.test.ts"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.47.10"
+    "@supabase/supabase-js": "^2.47.10",
+    "mammoth": "^1.8.0",
+    "unpdf": "^0.12.1"
   }
 }
