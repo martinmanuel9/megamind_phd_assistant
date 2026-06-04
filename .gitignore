@@ -15,3 +15,5 @@ settings.json
 # TS build info
 *.tsbuildinfo
 .supabase/
+# Playwright MCP scratch output (screenshots/snapshots)
+.playwright-mcp/
