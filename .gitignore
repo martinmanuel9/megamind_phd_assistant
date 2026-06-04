@@ -17,3 +17,5 @@ settings.json
 .supabase/
 # Playwright MCP scratch output (screenshots/snapshots)
 .playwright-mcp/
+# Supabase CLI scratch
+supabase/.temp/
