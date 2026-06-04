@@ -106,7 +106,10 @@ export async function ingestDocument(
   try {
     await db.from("chunks").delete().eq("document_id", documentId);
 
-    const chunks = chunkText(text, opts);
+    // Postgres text can't hold NUL bytes (and other control chars break JSON);
+    // PDF extraction sometimes emits them. Strip before chunking/embedding.
+    const clean = text.replace(/\x00/g, "").replace(/[\x01-\x08\x0b\x0c\x0e-\x1f]/g, " ");
+    const chunks = chunkText(clean, opts);
     const BATCH = 64;
     for (let i = 0; i < chunks.length; i += BATCH) {
       const batch = chunks.slice(i, i + BATCH);
