@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { doctor, getConfig, mcpStatus } from "@lob/core";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,8 @@ export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
   const report = await doctor();
+  // First-run: send brand-new users to the guided onboarding wizard.
+  if (!report.onboarded) redirect("/onboarding");
   const config = getConfig();
   const mcp = mcpStatus();
 
