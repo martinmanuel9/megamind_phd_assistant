@@ -1,6 +1,6 @@
 # Megamind — Project Brief
 
-> Product name: **Megamind PhD Assistant**. Repo: `localopenbrainobsidian`.
+> Product name: **Megamind PhD Assistant**. Repo: `megamind_phd_assistant`.
 
 ## What this is
 A local-first **PhD research assistant + second brain** that recreates and productionizes the

@@ -1,4 +1,4 @@
-# localopenbrainobsidian
+# megamind_phd_assistant
 
 A **local-first PhD research assistant + second brain**. Review journal articles with
 Perplexity / Ollama / any MCP client, write findings **directly into an Obsidian vault as

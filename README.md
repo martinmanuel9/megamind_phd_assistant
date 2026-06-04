@@ -1,6 +1,6 @@
 # Megamind
 
-> Megamind PhD Assistant &nbsp;·&nbsp; repo: `localopenbrainobsidian`
+> Megamind PhD Assistant &nbsp;·&nbsp; repo: `megamind_phd_assistant`
 
 A local-first **PhD research assistant + second brain**. Review journal articles with
 Perplexity / Ollama / any MCP client, write the findings **directly into your Obsidian vault as
