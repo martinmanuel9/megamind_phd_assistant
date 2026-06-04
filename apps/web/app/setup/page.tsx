@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { loadSettings, redactSettings } from "@lob/core";
 import { SetupForms } from "@/components/setup/setup-forms";
+import { ModelAdvisor } from "@/components/setup/model-advisor";
 import { ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,9 @@ export default async function SetupPage() {
         <code className="mx-1 font-mono text-xs">~/.localopenbrain/settings.json</code>
         and read by both the app and the MCP server.
       </p>
+      <div className="mb-6">
+        <ModelAdvisor />
+      </div>
       <SetupForms initial={settings} />
     </main>
   );

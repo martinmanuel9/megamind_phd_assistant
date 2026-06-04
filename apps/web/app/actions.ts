@@ -8,6 +8,7 @@ import {
   doctor,
   ensureAccessKey,
   getConfig,
+  getHardwareAdvice,
   git,
   initVault,
   loadSettings,
@@ -34,6 +35,7 @@ import {
   stopMcp,
   updateSettings,
   type DoctorReport,
+  type HardwareAdvice,
   type McpStatus,
   type Settings,
 } from "@lob/core";
@@ -44,7 +46,17 @@ import {
  * client. Each export is an async function (Next.js "use server" requirement).
  */
 
-export type { MendeleyOverview, MendeleySyncResult, SchedulerStatus };
+export type { MendeleyOverview, MendeleySyncResult, SchedulerStatus, HardwareAdvice };
+
+export async function fetchHardwareAdvice(): Promise<HardwareAdvice> {
+  return getHardwareAdvice(getConfig());
+}
+
+export async function setChatModel(model: string): Promise<{ ok: boolean }> {
+  const cur = loadSettings();
+  updateSettings({ models: { ...cur.models, chatModel: model } });
+  return { ok: true };
+}
 
 const MASK = "••••••••";
 

@@ -10,4 +10,5 @@ export * from "./documents/review.js";
 export * from "./integrations/mendeley.js";
 export * from "./process/mcp.js";
 export * from "./process/launchd.js";
+export * from "./system/hardware.js";
 export * from "./setup/init.js";
