@@ -1,24 +1,26 @@
 # localopenbrainobsidian — Project Brief
 
-## What We're Building
-I want to create the similar architecture and productionize my open-brain capability and mcp server, connect to my obsidian vault as a default and later sync to the openbrain, I also want to create a front end where I can start an MCP server and front end where I user can upload documents, we want a document repository, we want obsidian to tackle on the AI review and spit out the basic needs. We want to manage scripts and agents so that the user can have a PhD Research assistant and document management system that they can use obsidian to take notes, ai and perplexity to research and provide links and outputs synopsis synthesis. Create a knowledge base based on the articles downloaded and managed
+## What this is
+A local-first **PhD research assistant + second brain** that recreates and productionizes the
+`open-brain` capability around Obsidian. Review journal articles with Perplexity / Ollama / any
+MCP client, write findings directly into an Obsidian vault as Markdown, and keep every note
+traceable back to the exact source passage via a managed document repository with RAG.
 
-## Tech Stack
-recommend
+Built generically for any new user — local by default, hosted-ready.
 
+## Tech stack (as built)
+- **Monorepo:** npm workspaces, TypeScript (ESM/NodeNext), `tsx`.
+- **Core (`@lob/core`):** shared server-only logic — settings/config, Supabase client, an
+  OpenAI-compatible model client (Ollama default), vault tooling, RAG, Storage, MCP process mgmt.
+- **MCP server (`@lob/mcp-server`):** Node + Hono + `@hono/mcp`, ~13 research tools.
+- **Web (`@lob/web`):** Next.js 15 + React 19 + Tailwind (dark/zinc/Geist) — the control plane.
+- **Data:** local Supabase (Postgres + pgvector + Storage), schema `documents → chunks →
+  note_links ← notes` + `thoughts`. Embeddings: `nomic-embed-text` (768-dim) via Ollama.
 
-## Development Approach
-1. Run `/speckit.specify` to formalize requirements from this brief
-2. Run `/speckit.plan` to create implementation plan
-3. Run `/speckit.tasks` to generate task breakdown
-4. Execute with `/gsd:execute-plan`
-5. Review with `/review` and `/qa` before shipping
+## Core loop
+`npm run up` → onboarding → upload paper → AI review → claim-traceable note in Obsidian →
+semantic search → click claim → exact source passage → vault git sync. All browser-driven.
 
-## Success Criteria
-- All core features functional and tested
-- Clean, maintainable code following recommend best practices
-- Responsive design (mobile + desktop)
-- Production-ready (no dev shortcuts, proper error handling)
-
-## Milestones
-Track progress in Linear — issues created automatically by Itzel.
+## Status
+Feature-complete and pushed to GitHub. See `CLAUDE.md` for architecture/conventions and the
+`project-overview` memory file for the commit log and remaining optional polish.
