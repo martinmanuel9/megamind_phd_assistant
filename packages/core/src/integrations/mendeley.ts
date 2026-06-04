@@ -93,6 +93,8 @@ export interface MendeleyOverview {
   pdfCount: number;
   lastSyncAt?: string;
   lastResult?: Config["settings"]["mendeley"]["lastResult"];
+  autoSyncMinutes: number;
+  autoSyncReview: boolean;
   reason?: string;
 }
 
@@ -135,8 +137,20 @@ export function mendeleyOverview(config: Config): MendeleyOverview {
   return {
     connected, dbFound, dbReadable, userfilesExists, sqliteAvailable,
     dbPath, userfilesPath, libraryCount, pdfCount,
-    lastSyncAt: m.lastSyncAt, lastResult: m.lastResult, reason,
+    lastSyncAt: m.lastSyncAt, lastResult: m.lastResult,
+    autoSyncMinutes: m.autoSyncMinutes ?? 0, autoSyncReview: m.autoSyncReview ?? false,
+    reason,
   };
+}
+
+/** Whether an auto-sync is due, based on configured cadence + last sync time. */
+export function dueForAutoSync(config: Config): boolean {
+  const m = config.settings.mendeley;
+  const mins = m.autoSyncMinutes ?? 0;
+  if (!mins || mins <= 0) return false;
+  if (!m.lastSyncAt) return true;
+  const elapsedMin = (Date.now() - new Date(m.lastSyncAt).getTime()) / 60000;
+  return elapsedMin >= mins;
 }
 
 export interface MendeleySyncResult {

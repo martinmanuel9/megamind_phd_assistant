@@ -9,6 +9,7 @@ import {
   createServiceClient,
   createSourceNote,
   ConfigError,
+  dueForAutoSync,
   ensureAccessKey,
   formatCitation,
   getConfig,
@@ -19,6 +20,7 @@ import {
   ragQuery,
   registerDocument,
   requireVaultRoot,
+  syncMendeley,
   type Config,
 } from "@lob/core";
 
@@ -398,3 +400,26 @@ serve({ fetch: app.fetch, port, hostname: host }, (info) => {
   console.log(`[localopenbrainobsidian] access key: ${key}`);
   console.log(`[localopenbrainobsidian] connect clients to: http://${host}:${info.port}?key=${key}`);
 });
+
+// --- Mendeley auto-sync heartbeat ---
+// Every 60s, re-read settings and run a sync if one is due (cadence set in the
+// UI). Self-correcting + re-entrancy-guarded; editing the interval takes effect
+// within a minute without a restart.
+let autoSyncRunning = false;
+setInterval(async () => {
+  const cfg = getConfig();
+  if (autoSyncRunning || !cfg.supabase.url || !cfg.supabase.serviceRoleKey) return;
+  if (!dueForAutoSync(cfg)) return;
+  autoSyncRunning = true;
+  try {
+    console.log(`[auto-sync] ${new Date().toISOString()} starting Mendeley sync…`);
+    const db = createServiceClient(cfg);
+    const model = createModelClient(cfg);
+    const r = await syncMendeley(db, model, cfg, { review: cfg.settings.mendeley.autoSyncReview });
+    console.log(`[auto-sync] done: +${r.imported} new, ${r.skipped} skipped, ${r.failed} failed`);
+  } catch (e) {
+    console.log(`[auto-sync] error: ${(e as Error).message}`);
+  } finally {
+    autoSyncRunning = false;
+  }
+}, 60_000);

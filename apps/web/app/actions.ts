@@ -387,6 +387,17 @@ export async function saveMendeleyPaths(input: { dbPath?: string; userfilesPath?
   return mendeleyOverview(getConfig());
 }
 
+export async function saveMendeleyAutoSync(minutes: number, review: boolean): Promise<MendeleyOverview> {
+  updateSettings({
+    mendeley: {
+      ...loadSettings().mendeley,
+      autoSyncMinutes: Number.isFinite(minutes) && minutes > 0 ? Math.floor(minutes) : 0,
+      autoSyncReview: review,
+    },
+  });
+  return mendeleyOverview(getConfig());
+}
+
 export async function runMendeleySync(review = false): Promise<{ ok: boolean; result?: MendeleySyncResult; error?: string }> {
   try {
     const config = getConfig();

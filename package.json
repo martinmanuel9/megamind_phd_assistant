@@ -13,6 +13,7 @@
     "down": "bash scripts/down.sh",
     "web": "npm run dev --workspace @lob/web",
     "ingest": "tsx apps/mcp-server/src/ingest-folder.ts",
+    "sync": "tsx apps/mcp-server/src/sync-once.ts",
     "typecheck": "tsc -b",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",

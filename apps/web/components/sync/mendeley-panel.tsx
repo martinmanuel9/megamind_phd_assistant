@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { MendeleyOverview } from "@/app/actions";
-import { getMendeleyOverview, runMendeleySync, saveMendeleyPaths } from "@/app/actions";
+import { getMendeleyOverview, runMendeleySync, saveMendeleyAutoSync, saveMendeleyPaths } from "@/app/actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,8 +26,18 @@ export function MendeleyPanel({ initial }: { initial: MendeleyOverview }) {
   const [dbPath, setDbPath] = useState(initial.dbPath ?? "");
   const [userfilesPath, setUserfilesPath] = useState(initial.userfilesPath ?? "");
   const [review, setReview] = useState(false);
+  const [autoMin, setAutoMin] = useState(String(initial.autoSyncMinutes || 0));
+  const [autoReview, setAutoReview] = useState(initial.autoSyncReview);
+  const [autoMsg, setAutoMsg] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
+
+  const saveAuto = () =>
+    start(async () => {
+      const o = await saveMendeleyAutoSync(Number(autoMin), autoReview);
+      setOv(o);
+      setAutoMsg(o.autoSyncMinutes > 0 ? `Auto-sync every ${o.autoSyncMinutes} min` : "Auto-sync off");
+    });
 
   const verify = () =>
     start(async () => {
@@ -113,6 +123,32 @@ export function MendeleyPanel({ initial }: { initial: MendeleyOverview }) {
               {pending ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />} Sync now
             </Button>
             {syncMsg && <span className="text-xs text-muted-foreground">{syncMsg}</span>}
+          </div>
+
+          <div className="space-y-3 border-t border-border pt-4">
+            <div>
+              <div className="text-sm font-medium">Scheduled auto-sync</div>
+              <p className="text-xs text-muted-foreground">
+                Runs automatically while the MCP server is running (start it under /server).
+              </p>
+            </div>
+            <div className="flex items-end gap-3">
+              <div className="space-y-1.5">
+                <Label>Every (minutes, 0 = off)</Label>
+                <Input type="number" min={0} value={autoMin} onChange={(e) => setAutoMin(e.target.value)} className="w-32" />
+              </div>
+              <Button variant="outline" disabled={pending} onClick={saveAuto}>
+                {pending && <Loader2 className="size-4 animate-spin" />} Save
+              </Button>
+              {autoMsg && <span className="pb-2 text-xs text-muted-foreground">{autoMsg}</span>}
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={autoReview} onChange={(e) => setAutoReview(e.target.checked)} />
+              AI-review each new paper during auto-sync
+            </label>
+            {ov.autoSyncMinutes > 0 && (
+              <Badge variant="success">auto-sync on · every {ov.autoSyncMinutes} min{ov.autoSyncReview ? " · with AI review" : ""}</Badge>
+            )}
           </div>
         </CardContent>
       </Card>

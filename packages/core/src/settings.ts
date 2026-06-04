@@ -63,6 +63,10 @@ export interface MendeleySettings {
   userfilesPath?: string;
   lastSyncAt?: string;
   lastResult?: { imported: number; skipped: number; failed: number; total: number };
+  /** Auto-sync cadence in minutes (0/undefined = off). Runs while the MCP server is up. */
+  autoSyncMinutes?: number;
+  /** AI-review each newly synced paper during auto-sync. */
+  autoSyncReview?: boolean;
 }
 
 export interface Settings {
