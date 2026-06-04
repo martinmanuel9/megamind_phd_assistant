@@ -4,6 +4,7 @@ import {
   checkSupabase,
   createModelClient,
   createServiceClient,
+  DOCUMENTS_BUCKET,
   doctor,
   ensureAccessKey,
   getConfig,
@@ -275,6 +276,42 @@ export async function documentDetail(id: string): Promise<DocumentDetail | null>
     links,
     citingNotes,
   };
+}
+
+export async function updateDocumentMeta(
+  id: string,
+  fields: { title?: string; authors?: string[]; doi?: string; published?: string; venue?: string; source_url?: string; kind?: string },
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const db = createServiceClient(getConfig());
+    const patch: Record<string, unknown> = {};
+    if (fields.title !== undefined) patch.title = fields.title.trim();
+    if (fields.authors !== undefined) patch.authors = fields.authors;
+    if (fields.doi !== undefined) patch.doi = fields.doi || null;
+    if (fields.published !== undefined) patch.published = fields.published || null;
+    if (fields.venue !== undefined) patch.venue = fields.venue || null;
+    if (fields.source_url !== undefined) patch.source_url = fields.source_url || null;
+    if (fields.kind !== undefined) patch.kind = fields.kind;
+    const { error } = await db.from("documents").update(patch).eq("id", id);
+    return error ? { ok: false, error: error.message } : { ok: true };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
+}
+
+export async function deleteDocument(id: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const db = createServiceClient(getConfig());
+    const { data: doc } = await db.from("documents").select("storage_path").eq("id", id).maybeSingle();
+    if (doc?.storage_path) {
+      await db.storage.from(DOCUMENTS_BUCKET).remove([doc.storage_path]).catch(() => {});
+    }
+    // Cascades chunks + note_links (vault note files are left intact).
+    const { error } = await db.from("documents").delete().eq("id", id);
+    return error ? { ok: false, error: error.message } : { ok: true };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
 }
 
 export async function listDocuments(): Promise<DocumentSummary[]> {

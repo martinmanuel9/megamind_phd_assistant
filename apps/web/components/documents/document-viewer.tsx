@@ -5,7 +5,8 @@ import type { DocumentDetail } from "@/app/actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { ExternalLink, Quote, Link2 } from "lucide-react";
+import { Quote, Link2 } from "lucide-react";
+import { DocumentHeader } from "@/components/documents/document-header";
 
 export function DocumentViewer({ detail }: { detail: DocumentDetail }) {
   const { document: doc, chunks, links, citingNotes } = detail;
@@ -34,26 +35,7 @@ export function DocumentViewer({ detail }: { detail: DocumentDetail }) {
 
   return (
     <div>
-      <header className="mb-6">
-        <h1 className="text-xl font-semibold tracking-tight">{doc.title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {(doc.authors ?? []).join(", ") || "—"}
-          {doc.venue ? ` · ${doc.venue}` : ""}
-          {doc.published ? ` · ${doc.published}` : ""}
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Badge variant="outline">{doc.kind}</Badge>
-          <Badge variant={doc.status === "ingested" ? "success" : "outline"}>{doc.status}</Badge>
-          <Badge variant="outline">{chunks.length} passages</Badge>
-          <Badge variant="outline">{links.length} traced claims</Badge>
-          {doc.source_url && (
-            <a href={doc.source_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-              source <ExternalLink className="size-3" />
-            </a>
-          )}
-          {doc.doi && <span className="text-xs text-muted-foreground">doi:{doc.doi}</span>}
-        </div>
-      </header>
+      <DocumentHeader document={doc} chunkCount={chunks.length} linkCount={links.length} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Passages */}
