@@ -66,6 +66,10 @@ import {
   requireVaultRoot,
   // agentic review
   runReview,
+  // vault note indexing
+  reconcileNotes,
+  scanVault,
+  type ScanSummary,
 } from "@lob/core";
 
 /**
@@ -617,4 +621,28 @@ export async function runReviewAction(req: RunReviewRequest) {
     addArtifactToRepo: req.addArtifactToRepo,
     addReviewToRepo: req.addReviewToRepo,
   });
+}
+
+// --- Vault note indexing ---
+
+export type { ScanSummary };
+
+export async function reconcileNotesAction(): Promise<void> {
+  const config = getConfig();
+  if (!config.supabase.url || !config.supabase.serviceRoleKey || !config.vault.root) return;
+  try {
+    await reconcileNotes(createServiceClient(config), config);
+  } catch {
+    // Light reconcile is best-effort; never surface as a hard error on load.
+  }
+}
+
+export async function scanVaultAction(): Promise<ScanSummary> {
+  const config = getConfig();
+  if (!config.supabase.url || !config.supabase.serviceRoleKey || !config.vault.root) {
+    return { added: 0, removed: 0, embedded: 0, skipped: 0, failed: 0 };
+  }
+  const db = createServiceClient(config);
+  const model = createModelClient(config);
+  return scanVault(db, model, config);
 }
