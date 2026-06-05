@@ -64,6 +64,10 @@ supabase/             config.toml (local stack) + migrations/0001_init.sql
 
 ## Quickstart
 
+> **First time on this machine?** Follow **[INSTALL.md](INSTALL.md)** — it walks through downloading
+> and installing every prerequisite (Node, Docker, Supabase CLI, Ollama) from scratch. The steps
+> below assume those are already installed.
+
 ```bash
 npm install
 ollama pull nomic-embed-text          # embeddings (768-dim)
@@ -108,13 +112,15 @@ The everyday flow — add sources, turn them into traceable notes, then search a
 5. **Use from your AI tools**: start the server in **`/server`**, grab a config from **`/connect`**,
    and Perplexity/Claude/Codex can call the same tools.
 
-**Full walkthrough:** see **[docs/USAGE.md](docs/USAGE.md)**.
+**In the app:** every screen has a **How to use** link to the built-in **`/help`** guide (live setup
+checklist + this workflow + route reference). **Full walkthrough:** see **[docs/USAGE.md](docs/USAGE.md)**.
 
 ## Web routes
 
 | Route | What |
 |---|---|
 | `/` | Dashboard — live system status + workspace nav |
+| `/help` | In-app how-to guide — live setup checklist, workflow, route reference |
 | `/onboarding` | First-run setup wizard |
 | `/setup` | Supabase, Vault, GitHub, Models + hardware-aware model advisor |
 | `/ask` | RAG chat grounded in your library; save answers as traceable notes |
