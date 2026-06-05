@@ -14,3 +14,5 @@ export * from "./process/mcp.js";
 export * from "./process/launchd.js";
 export * from "./system/hardware.js";
 export * from "./setup/init.js";
+export * from "./agents/personas.js";
+export * from "./agents/templates.js";
