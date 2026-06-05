@@ -114,6 +114,16 @@ migration — no code changes. Document files live in Supabase Storage, so they 
 
 ---
 
+## 9. Syncing your Obsidian notes
+
+`/notes` mirrors your vault — notes you write directly in Obsidian appear automatically (a light
+reconcile runs when the app loads). Click **Sync vault** (on `/notes` or the dashboard) to also embed
+your notes into the repository so they become searchable in `/search` and usable as grounding by
+`/ask` and agents. Re-syncing only re-embeds notes whose content changed. Deleting a note in Obsidian
+removes it from the index on the next load.
+
+---
+
 ## Troubleshooting
 
 - **Dashboard shows a red item** — run `npm run setup` for a precise checklist, or check `/setup`.

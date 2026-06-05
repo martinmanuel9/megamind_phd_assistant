@@ -19,7 +19,7 @@ packages/core/        @lob/core — all shared logic (server-only; uses node fs 
     config.ts         resolves config: env > settings.json > defaults; requireSupabase/requireVaultRoot
     db/client.ts      Supabase service client + checkSupabase (distinguishes not-configured vs not-migrated)
     embeddings/client.ts  OpenAI-compatible model client (Ollama default; nomic task-prefixes baked in)
-    vault/            paths (guard), frontmatter, bibliography, notes (writer + readNote), git
+    vault/            paths (guard + tree/markdown walkers), frontmatter, bibliography, notes, git, scan (note indexing)
     rag/              chunk (recursive), ingest (register/ingest/ragQuery)
     storage/files.ts  Supabase Storage (documents bucket) — portable local↔hosted
     documents/        process (upload pipeline), review (AI review)
@@ -39,6 +39,9 @@ claim → a document → the exact chunk that backs it (claim-level traceability
 persona-driven **agents/workflows** (stored in settings.json) that review an artifact and write notes
 into the vault (any folder); **collections** (`documents.collection_id`) group documents and scope
 grounding.
+
+Vault note indexing (`vault/scan.ts`) mirrors the vault into the `notes` table on load and, via
+"Sync vault", embeds notes (linked by `notes.document_id`) so user-authored notes are searchable.
 
 ## Running it
 
