@@ -318,15 +318,14 @@ export function PersonaEditor({
                 )}
               </div>
               <div className="ml-4 flex shrink-0 items-center gap-1.5">
-                {!p.builtin && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => { setEditing(p); setCreatingNew(false); }}
-                  >
-                    <Pencil className="size-3.5" />
-                  </Button>
-                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  title="Edit"
+                  onClick={() => { setEditing(p); setCreatingNew(false); }}
+                >
+                  <Pencil className="size-3.5" />
+                </Button>
                 <Button size="sm" variant="ghost" onClick={() => duplicate(p)} title="Duplicate">
                   <Copy className="size-3.5" />
                 </Button>
