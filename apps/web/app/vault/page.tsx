@@ -12,7 +12,7 @@ export default async function VaultPage() {
       <Link href="/" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" /> Dashboard
       </Link>
-      <h1 className="mb-1 text-xl font-semibold tracking-tight">Vault &amp; git</h1>
+      <h1 className="mb-1 text-xl font-semibold tracking-tight">Obsidian Vault &amp; git</h1>
       <p className="mb-8 text-sm text-muted-foreground">
         Version and sync your Obsidian vault to GitHub.
       </p>

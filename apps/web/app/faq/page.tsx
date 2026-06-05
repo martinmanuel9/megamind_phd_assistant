@@ -229,6 +229,19 @@ const SECTIONS: Section[] = [
     ],
   },
   {
+    title: "Agents (review workflows)",
+    items: [
+      {
+        q: "What's the difference between Committee and Debate?",
+        a: (<>Committee runs each persona independently, then a Chair synthesizes — good for diverse, unbiased takes. Debate runs personas in sequence so each sees the prior ones (Advocate → Challenger → Reviewer) — good for stress-testing a thesis or hypothesis.</>),
+      },
+      {
+        q: "Where do agent reviews go?",
+        a: (<>Into the <A href="/agents/run">Obsidian Vault folder you pick</A> on the run (you can create a new folder there). They only enter the repository if you tick "add to open brain".</>),
+      },
+    ],
+  },
+  {
     title: "Hosting & scaling",
     items: [
       {

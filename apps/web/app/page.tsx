@@ -4,7 +4,7 @@ import { doctor, getConfig, mcpStatus } from "@lob/core";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusRow } from "@/components/status-row";
-import { ArrowRight, Database, FileText, Server, Settings2, GitBranch, BrainCircuit, Search, NotebookPen, RefreshCw, Plug, Sparkles, BookOpen, HelpCircle } from "lucide-react";
+import { ArrowRight, Database, FileText, Server, Settings2, GitBranch, BrainCircuit, Search, NotebookPen, RefreshCw, Plug, Sparkles, BookOpen, HelpCircle, Bot } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +73,7 @@ export default async function Dashboard() {
             />
             <StatusRow
               ok={report.git.isRepo}
-              label="Vault git"
+              label="Obsidian Vault git"
               detail={report.git.remote ?? (report.git.isRepo ? "no remote" : "not a repo")}
             />
           </CardContent>
@@ -112,7 +112,8 @@ export default async function Dashboard() {
         <NavCard href="/sync" icon={<RefreshCw className="size-5" />} title="Mendeley sync" desc="Import new papers from Mendeley" />
         <NavCard href="/server" icon={<Server className="size-5" />} title="MCP server" desc="Start, stop & view logs" />
         <NavCard href="/connect" icon={<Plug className="size-5" />} title="Connect clients" desc="Perplexity, Claude, Codex, Cursor" />
-        <NavCard href="/vault" icon={<GitBranch className="size-5" />} title="Vault & git" desc="Notes and GitHub sync" />
+        <NavCard href="/agents" icon={<Bot className="size-5" />} title="Agents" desc="Persona reviewers & review workflows" />
+        <NavCard href="/vault" icon={<GitBranch className="size-5" />} title="Obsidian Vault & git" desc="Notes and GitHub sync" />
         <NavCard href="/setup" icon={<Settings2 className="size-5" />} title="Setup" desc="Supabase, vault, GitHub, models" />
         <NavCard href="/help" icon={<BookOpen className="size-5" />} title="How to use" desc="Guided walkthrough & route reference" />
         <NavCard href="/faq" icon={<HelpCircle className="size-5" />} title="FAQ" desc="Common questions, answered" />
