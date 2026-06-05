@@ -19,3 +19,6 @@ settings.json
 .playwright-mcp/
 # Supabase CLI scratch
 supabase/.temp/
+
+# brainstorming visual companion scratch
+.superpowers/
