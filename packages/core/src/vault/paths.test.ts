@@ -1,10 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   ensureVaultLayout,
+  listVaultMarkdown,
   listVaultTree,
   createVaultFolder,
   OutsideVaultError,
@@ -113,6 +114,24 @@ test("createVaultFolder makes a nested folder and rejects escapes", () => {
     assert.ok(listVaultTree(root).includes("Course — Methods/HW2"));
     assert.throws(() => createVaultFolder(root, "../escape"), OutsideVaultError);
     assert.throws(() => createVaultFolder(root, ".hidden"), OutsideVaultError);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("listVaultMarkdown returns non-hidden .md files relative to root, sorted", () => {
+  const root = makeVault();
+  mkdirSync(join(root, "Sub"), { recursive: true });
+  mkdirSync(join(root, ".obsidian"), { recursive: true });
+  writeFileSync(join(root, "a.md"), "# a");
+  writeFileSync(join(root, "Sub", "b.md"), "# b");
+  writeFileSync(join(root, "Sub", "c.txt"), "not md");
+  writeFileSync(join(root, ".obsidian", "hidden.md"), "# hidden");
+  try {
+    const files = listVaultMarkdown(root);
+    assert.deepEqual(files, ["Sub/b.md", "a.md"].sort());
+    assert.ok(!files.some((f) => f.includes(".obsidian")));
+    assert.ok(!files.some((f) => f.endsWith(".txt")));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
