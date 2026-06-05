@@ -120,7 +120,7 @@ export default async function HelpPage() {
             <ul className="space-y-1.5 text-sm text-muted-foreground">
               <li><strong className="text-foreground">Supabase</strong> — the database (local defaults pre-filled)</li>
               <li><strong className="text-foreground">Models</strong> — Ollama endpoint + a chat model</li>
-              <li><strong className="text-foreground">Vault</strong> — your Obsidian folder path</li>
+              <li><strong className="text-foreground">Obsidian Vault</strong> — your Obsidian folder path</li>
             </ul>
           </div>
           <div>
@@ -257,7 +257,9 @@ const ROUTES = [
   { href: "/sync", what: "Mendeley access, sync & scheduling" },
   { href: "/connect", what: "Copy-paste MCP configs for your AI clients" },
   { href: "/server", what: "Start/stop the MCP server + live logs" },
-  { href: "/vault", what: "Vault git status + commit & sync" },
+  { href: "/agents", what: "Persona reviewers & review workflows" },
+  { href: "/agents/run", what: "Run a review; writes notes to the Obsidian Vault" },
+  { href: "/vault", what: "Obsidian Vault git status + commit & sync" },
   { href: "/setup", what: "Supabase, vault, GitHub, models + hardware advisor" },
   { href: "/faq", what: "Frequently asked questions" },
 ];
@@ -318,7 +320,16 @@ const USE_CASES: {
     icon: <GitBranch className="size-4" />,
     steps: [
       { text: "Connect a GitHub remote in Setup (one time).", href: "/setup" },
-      { text: "Open Vault & git and click Commit & sync.", href: "/vault" },
+      { text: "Open Obsidian Vault & git and click Commit & sync.", href: "/vault" },
+    ],
+  },
+  {
+    title: "Get feedback from an agent (advisor, professor, committee)",
+    icon: <Sparkles className="size-4" />,
+    steps: [
+      { text: "Define or pick a persona/workflow.", href: "/agents" },
+      { text: "Run it on a draft (vault note, upload, or paste).", href: "/agents/run" },
+      { text: "Read the per-agent notes + synthesis in your Obsidian Vault.", href: "/notes" },
     ],
   },
 ];

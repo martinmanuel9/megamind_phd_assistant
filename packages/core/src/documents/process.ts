@@ -5,6 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ModelClient } from "../embeddings/client.js";
 import { ensureDocumentsBucket, uploadDocumentFile } from "../storage/files.js";
 import { ingestDocument, registerDocument, type DocumentRow } from "../rag/ingest.js";
+import { collectionSlugFor, moveDocumentToCollection } from "../collections.js";
 
 /**
  * Full upload pipeline: extract text → store the original file → register the
@@ -54,6 +55,8 @@ export interface UploadInput {
   venue?: string;
   kind?: string;
   metadata?: Record<string, unknown>;
+  /** When provided, places the Storage object under the collection's slug and sets documents.collection_id. */
+  collectionId?: string;
 }
 
 export interface UploadResult {
@@ -75,7 +78,8 @@ export async function processDocumentUpload(
 
   const sha = createHash("sha256").update(input.bytes).digest("hex");
   const ext = extOf(input.filename) || "bin";
-  const storagePath = `${sha}.${ext}`;
+  const slug = await collectionSlugFor(db, input.collectionId ?? null);
+  const storagePath = `${slug}/${sha}.${ext}`;
 
   await ensureDocumentsBucket(db);
   await uploadDocumentFile(db, storagePath, input.bytes, input.mime || "application/octet-stream");
@@ -100,6 +104,8 @@ export async function processDocumentUpload(
     bytes: input.bytes,
     metadata: input.metadata,
   });
+
+  if (input.collectionId) await moveDocumentToCollection(db, document.id, input.collectionId);
 
   const ing = await ingestDocument(db, model, document.id, text);
 

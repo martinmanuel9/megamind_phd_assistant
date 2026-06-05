@@ -5,6 +5,7 @@ import type { ModelClient } from "../embeddings/client.js";
 import type { Config } from "../config.js";
 import { requireVaultRoot } from "../config.js";
 import {
+  createVaultFolder,
   ensureVaultLayout,
   resolveInsideVault,
   sanitizeTitle,
@@ -59,12 +60,13 @@ async function persistNote(
     frontmatter: FrontmatterField[];
     body: string;
     metadata?: Record<string, unknown>;
+    targetDir?: string;
   },
 ): Promise<{ noteId: string; relPath: string; absPath: string }> {
   const root = requireVaultRoot(config);
   ensureVaultLayout(root, writeDirsOf(config));
 
-  const dir = dirFor(args.noteType, config.vault.dirs);
+  const dir = args.targetDir ?? dirFor(args.noteType, config.vault.dirs);
   const filename = sanitizeTitle(args.title) + ".md";
   const relPath = join(dir, filename);
   const absPath = resolveInsideVault(root, relPath, {
@@ -355,4 +357,43 @@ export async function notesCitingDocument(
     else byNote.set(row.note_id, { title: row.notes.title, vaultPath: row.notes.vault_path, claims: 1 });
   }
   return [...byNote.entries()].map(([noteId, v]) => ({ noteId, ...v }));
+}
+
+/**
+ * Write a free-form Markdown note into a chosen vault folder and register it in
+ * `notes`. Used by the agent engine, which produces prose reviews rather than
+ * claim-linked literature notes. `targetDir` may be any non-hidden in-vault path.
+ */
+export async function writeMarkdownNote(
+  db: SupabaseClient,
+  config: Config,
+  input: {
+    title: string;
+    targetDir: string;
+    body: string;
+    topics?: string[];
+    frontmatter?: FrontmatterField[];
+    metadata?: Record<string, unknown>;
+  },
+): Promise<{ noteId: string; relPath: string; absPath: string }> {
+  const fm: FrontmatterField[] =
+    input.frontmatter ?? [
+      ["type", "draft"],
+      ["status", "review"],
+      ["created", todayISO()],
+      ["updated", todayISO()],
+      ["tags", (input.topics ?? []).map((t) => `topic/${t}`)],
+    ];
+  // Ensure the destination folder exists (guarded: rejects .., ~, hidden dirs).
+  // Empty targetDir means the vault root, which always exists.
+  if (input.targetDir) createVaultFolder(requireVaultRoot(config), input.targetDir);
+  return persistNote(db, config, {
+    noteType: "draft",
+    title: input.title,
+    topics: input.topics ?? [],
+    targetDir: input.targetDir,
+    frontmatter: fm,
+    body: input.body,
+    metadata: input.metadata,
+  });
 }

@@ -69,6 +69,42 @@ export interface MendeleySettings {
   autoSyncReview?: boolean;
 }
 
+export type PersonaArchetype =
+  | "professor" | "advisor" | "peer-reviewer" | "committee-stakeholder"
+  | "advocate" | "challenger" | "reviewer" | "hypothesis-verifier"
+  | "synthesizer" | "custom";
+
+export interface Persona {
+  id: string;
+  name: string;
+  archetype: PersonaArchetype;
+  stance: string;
+  rubric: string;
+  tone: string;
+  depth: "brief" | "standard" | "detailed";
+  /** Override the chat model; falls back to settings.models.chatModel. */
+  model?: string;
+  grounding: { enabled: boolean; scope: "all" | { collectionId: string } };
+  outputFormat: "structured" | "freeform";
+  builtin?: boolean;
+}
+
+export interface Workflow {
+  id: string;
+  name: string;
+  mode: "parallel" | "sequential";
+  steps: { personaId: string }[];
+  synthesis: { enabled: boolean; personaId?: string };
+  builtin?: boolean;
+}
+
+export interface AgentsSettings {
+  personas: Persona[];
+  workflows: Workflow[];
+  defaults: { addArtifactToRepo: boolean; addReviewToRepo: boolean };
+  seeded: boolean;
+}
+
 export interface Settings {
   version: 1;
   supabase: SupabaseSettings;
@@ -76,6 +112,7 @@ export interface Settings {
   git: GitSettings;
   models: ModelSettings;
   mendeley: MendeleySettings;
+  agents: AgentsSettings;
   /** Access key gating the MCP HTTP endpoint. Generated on first setup. */
   mcpAccessKey?: string;
   /** True once the setup flow has completed successfully at least once. */
@@ -114,6 +151,12 @@ export const DEFAULT_SETTINGS: Settings = {
     chatModel: "llama3.1:8b",
   },
   mendeley: { enabled: false },
+  agents: {
+    personas: [],
+    workflows: [],
+    defaults: { addArtifactToRepo: false, addReviewToRepo: false },
+    seeded: false,
+  },
   onboarded: false,
 };
 
@@ -138,6 +181,11 @@ function mergeSettings(base: Settings, patch: Partial<Settings>): Settings {
     git: { ...base.git, ...patch.git },
     models: { ...base.models, ...patch.models },
     mendeley: { ...base.mendeley, ...patch.mendeley },
+    agents: {
+      ...base.agents,
+      ...patch.agents,
+      defaults: { ...base.agents.defaults, ...patch.agents?.defaults },
+    },
   };
 }
 

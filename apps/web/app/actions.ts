@@ -24,6 +24,7 @@ import {
   readNote,
   removeMcpAgent,
   removeSyncAgent,
+  requireSupabase,
   schedulerStatus,
   syncMendeley,
   type MendeleyOverview,
@@ -41,6 +42,30 @@ import {
   type HardwareAdvice,
   type McpStatus,
   type Settings,
+  // agents
+  listPersonas,
+  savePersona,
+  deletePersona,
+  listWorkflows,
+  saveWorkflow,
+  deleteWorkflow,
+  getWorkflow,
+  loadAgents,
+  newAgentId,
+  type Persona,
+  type Workflow,
+  // collections
+  listCollections,
+  createCollection,
+  renameCollection,
+  moveDocumentToCollection,
+  type Collection,
+  // vault tree
+  listVaultTree,
+  createVaultFolder,
+  requireVaultRoot,
+  // agentic review
+  runReview,
 } from "@lob/core";
 
 /**
@@ -199,6 +224,7 @@ export interface DocumentSummary {
   kind: string;
   status: string;
   created_at: string;
+  collection_id: string | null;
 }
 
 export interface McpServerView extends McpStatus {
@@ -510,9 +536,85 @@ export async function listDocuments(): Promise<DocumentSummary[]> {
   const db = createServiceClient(config);
   const { data, error } = await db
     .from("documents")
-    .select("id, title, authors, kind, status, created_at")
+    .select("id, title, authors, kind, status, created_at, collection_id")
     .order("created_at", { ascending: false })
     .limit(200);
   if (error) return [];
   return (data ?? []) as DocumentSummary[];
+}
+
+// --- Agents: personas & workflows ---
+
+export type { Persona, Workflow, Collection };
+
+export async function listPersonasAction(): Promise<Persona[]> { return listPersonas(); }
+export async function savePersonaAction(p: Persona): Promise<Persona> {
+  if (!p.id) p = { ...p, id: newAgentId("persona", p.name) };
+  return savePersona(p);
+}
+export async function deletePersonaAction(id: string): Promise<void> { deletePersona(id); }
+
+export async function listWorkflowsAction(): Promise<Workflow[]> { return listWorkflows(); }
+export async function saveWorkflowAction(w: Workflow): Promise<Workflow> {
+  if (!w.id) w = { ...w, id: newAgentId("workflow", w.name) };
+  return saveWorkflow(w);
+}
+export async function deleteWorkflowAction(id: string): Promise<void> { deleteWorkflow(id); }
+
+// --- Collections ---
+
+export async function listCollectionsAction(): Promise<Collection[]> {
+  return listCollections(createServiceClient(getConfig()));
+}
+export async function createCollectionAction(name: string, description?: string): Promise<Collection> {
+  return createCollection(createServiceClient(getConfig()), { name, description });
+}
+export async function renameCollectionAction(id: string, name: string): Promise<Collection> {
+  return renameCollection(createServiceClient(getConfig()), id, name);
+}
+export async function moveDocumentAction(documentId: string, collectionId: string | null): Promise<void> {
+  await moveDocumentToCollection(createServiceClient(getConfig()), documentId, collectionId);
+}
+
+// --- Vault tree ---
+
+export async function vaultTreeAction(): Promise<string[]> {
+  return listVaultTree(requireVaultRoot(getConfig()));
+}
+export async function createVaultFolderAction(relDir: string): Promise<string[]> {
+  const root = requireVaultRoot(getConfig());
+  createVaultFolder(root, relDir);
+  return listVaultTree(root);
+}
+
+// --- Agentic review ---
+
+export interface RunReviewRequest {
+  artifact:
+    | { kind: "note"; relPath: string }
+    | { kind: "text"; text: string; title: string }
+    | { kind: "document"; documentId: string };
+  workflowId?: string;
+  personaId?: string;
+  targetDir: string;
+  addArtifactToRepo: boolean;
+  addReviewToRepo: boolean;
+}
+
+export async function runReviewAction(req: RunReviewRequest) {
+  const config = getConfig();
+  requireSupabase(config);
+  const db = createServiceClient(config);
+  const model = createModelClient(config);
+  const workflow = req.workflowId ? getWorkflow(req.workflowId) : undefined;
+  const personas = loadAgents().personas;
+  return runReview(db, model, config, {
+    artifact: req.artifact,
+    workflow,
+    singlePersonaId: req.personaId,
+    personas,
+    targetDir: req.targetDir,
+    addArtifactToRepo: req.addArtifactToRepo,
+    addReviewToRepo: req.addReviewToRepo,
+  });
 }

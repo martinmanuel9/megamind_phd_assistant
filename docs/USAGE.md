@@ -66,7 +66,22 @@ Notes land in your vault as Markdown; read them in-app at **`/notes`** or open t
 
 ---
 
-## 5. Find, verify, and reuse
+## 5. Agentic review (agents & workflows)
+
+Define reviewer **personas** and compose them into **workflows** on `/agents`. Two templates ship
+ready to use: **Committee** (independent reviews + a synthesis) and **Debate** (Advocate → Challenger
+→ Reviewer). On `/agents/run`, pick an artifact (a vault note, an uploaded Word/PDF/MD file, or pasted
+text), choose a persona or workflow, pick the Obsidian Vault folder to write into (create one inline),
+and optionally tick "add to open brain" to also ingest the artifact and/or reviews into the repository.
+Each agent writes its own note; workflows add a synthesis note with a verdict and prioritized actions.
+
+Organize the document repository into **collections** on `/documents` (a left-rail: create, rename,
+move documents, filter). A persona's grounding can be scoped to a collection, so a reviewer cites only
+the relevant sources. Uploads (and Mendeley imports, after syncing) can be assigned to a collection.
+
+---
+
+## 6. Find, verify, and reuse
 
 - **Search** (`/search`): semantic search across document passages + captured memory, ranked by
   meaning. Click a result to open the source document scrolled to the exact passage.
@@ -77,7 +92,7 @@ Notes land in your vault as Markdown; read them in-app at **`/notes`** or open t
 
 ---
 
-## 6. Connect your AI tools (MCP)
+## 7. Connect your AI tools (MCP)
 
 Megamind is also an **MCP server**, so external clients can use the same tools.
 
@@ -91,7 +106,7 @@ Megamind is also an **MCP server**, so external clients can use the same tools.
 
 ---
 
-## 7. Local vs. hosted
+## 8. Local vs. hosted
 
 Everything runs locally by default (Supabase + Ollama + your vault). To move the data layer to
 **managed Supabase** later, just paste the hosted project's URL + keys in `/setup` and run the same

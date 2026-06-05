@@ -8,10 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Loader2, UploadCloud, XCircle } from "lucide-react";
+import type { Collection } from "@/app/actions";
 
 type Item = { name: string; state: "uploading" | "done" | "error"; detail?: string };
 
-export function UploadDropzone() {
+interface Props {
+  collections?: Collection[];
+}
+
+export function UploadDropzone({ collections = [] }: Props) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -22,6 +27,7 @@ export function UploadDropzone() {
   const [authors, setAuthors] = useState("");
   const [sourceUrl, setSourceUrl] = useState("");
   const [published, setPublished] = useState("");
+  const [collectionId, setCollectionId] = useState("");
 
   async function uploadOne(file: File): Promise<Item> {
     const fd = new FormData();
@@ -29,6 +35,7 @@ export function UploadDropzone() {
     if (authors) fd.append("authors", authors);
     if (sourceUrl) fd.append("source_url", sourceUrl);
     if (published) fd.append("published", published);
+    if (collectionId) fd.append("collectionId", collectionId);
     try {
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const data = await res.json();
@@ -81,6 +88,25 @@ export function UploadDropzone() {
             onChange={(e) => handleFiles(e.target.files)}
           />
         </div>
+
+        {/* Collection selector — shown when there are collections */}
+        {collections.length > 0 && (
+          <div className="flex items-center gap-3">
+            <Label className="shrink-0 text-sm">Add to collection</Label>
+            <select
+              value={collectionId}
+              onChange={(e) => setCollectionId(e.target.value)}
+              className="h-9 flex-1 rounded-md border border-input bg-background px-3 text-sm text-foreground transition-colors hover:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              <option value="">Uncategorized</option>
+              {collections.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <details className="text-sm">
           <summary className="cursor-pointer text-muted-foreground">Optional metadata (applies to this batch)</summary>

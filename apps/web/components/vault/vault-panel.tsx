@@ -34,7 +34,7 @@ export function VaultPanel({ initial }: { initial: GitStatus | null }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Vault git</CardTitle>
+          <CardTitle>Obsidian Vault git</CardTitle>
           <CardDescription>This vault isn&apos;t a git repository yet.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -51,7 +51,7 @@ export function VaultPanel({ initial }: { initial: GitStatus | null }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <GitBranch className="size-4" /> Vault git
+          <GitBranch className="size-4" /> Obsidian Vault git
         </CardTitle>
         <CardDescription>{status.remote ?? "no remote configured"}</CardDescription>
       </CardHeader>

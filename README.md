@@ -27,6 +27,7 @@ document repository with RAG.
   suited to agent workflows.
 - **Connect any MCP client** — generated configs for Claude Code, Claude Desktop, Cursor, Codex,
   Perplexity.
+- **Agentic review** — define persona agents (advisor, professor, peer reviewer, committee) and run Committee/Debate workflows over a draft; each agent's review and a synthesis are written into your Obsidian Vault, optionally grounded in a collection and optionally saved to the repository.
 - **Autonomous** — scheduled Mendeley sync (in-app heartbeat or always-on launchd agent) and vault
   GitHub sync.
 
@@ -132,6 +133,8 @@ walkthrough in **[docs/USAGE.md](docs/USAGE.md)** and the **[FAQ](docs/FAQ.md)**
 | `/connect` | Copy-paste MCP configs for Claude/Perplexity/Codex/Cursor |
 | `/sync` | Mendeley access, sync, cadence, always-on scheduling |
 | `/server` | Start/stop the MCP server + live logs + auto-start |
+| `/agents` | Persona reviewers & review workflows |
+| `/agents/run` | Run a review; writes per-agent + synthesis notes to the Obsidian Vault |
 | `/vault` | Vault git status + commit/sync |
 
 ## MCP tools

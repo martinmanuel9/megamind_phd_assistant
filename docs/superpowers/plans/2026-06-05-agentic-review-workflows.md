@@ -55,14 +55,16 @@ alter table documents add column if not exists collection_id uuid
 create index if not exists documents_collection_idx on documents (collection_id);
 ```
 
-- [ ] **Step 2: Apply and verify the schema**
+- [ ] **Step 2: Apply and verify the schema (NON-DESTRUCTIVE — never run `supabase db reset`; it wipes the real local data)**
 
-Run: `supabase db reset`
-Expected: completes without error; both `0001_init.sql` and `0002_collections.sql` apply.
+Run: `supabase migration up --local`
+Expected: applies the pending `0002_collections.sql` without error, leaving existing rows intact.
 
-Verify the column exists:
-Run: `supabase db reset && psql "$(supabase status -o env | grep DB_URL | cut -d= -f2- | tr -d '"')" -c "\d documents" | grep collection_id`
+Verify the column + table exist (the connection string is `postgresql://postgres:postgres@127.0.0.1:54322/postgres` for the local stack):
+Run: `psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -c "\d documents" | grep collection_id`
 Expected: a line showing `collection_id | uuid`.
+Run: `psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -c "\dt collections"`
+Expected: the `collections` table is listed.
 
 - [ ] **Step 3: Commit**
 
@@ -1960,7 +1962,7 @@ git commit -m "docs: agentic review workflows + collections"
 - [ ] `npm test` (repo root) — all core unit tests pass.
 - [ ] `npm run typecheck` — clean.
 - [ ] `npm run build --workspace @lob/web` — clean; `/agents`, `/agents/run` present.
-- [ ] `supabase db reset` — both migrations apply.
+- [ ] `supabase migration up --local` — the new migration applies (NEVER `db reset`; it wipes real data).
 - [ ] Manual smoke: create a persona, create a collection, run Committee on a draft, confirm per-agent + synthesis notes appear in the chosen Obsidian Vault folder.
 - [ ] Open a PR: `gh pr create` (base `main`) summarizing the feature.
 
