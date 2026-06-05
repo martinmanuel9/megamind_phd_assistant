@@ -24,6 +24,23 @@ import { reviewDocument } from "../documents/review.js";
 
 const mendeleyDir = () => join(homedir(), "Library/Application Support/Mendeley Reference Manager");
 
+/**
+ * Candidate locations for the SQLite databases. Newer Mendeley Reference Manager
+ * builds nest them under `mrm/databases`; older ones use `databases` directly.
+ */
+const dbSearchDirs = (): string[] => [
+  join(mendeleyDir(), "databases"),
+  join(mendeleyDir(), "mrm", "databases"),
+];
+
+/** First existing PDF store: newer builds may nest it under `mrm/userfiles`. */
+function findUserfiles(): string {
+  for (const c of [join(mendeleyDir(), "userfiles"), join(mendeleyDir(), "mrm", "userfiles")]) {
+    if (existsSync(c)) return c;
+  }
+  return join(mendeleyDir(), "userfiles");
+}
+
 export interface MendeleyEntry {
   fileId: string;
   title?: string;
@@ -40,27 +57,33 @@ function sqlite(dbPath: string, sql: string, json = false): string {
 
 /** Largest .db under Mendeley/databases that has the files_fts table. */
 export function findMendeleyDb(): string | undefined {
-  const dir = join(mendeleyDir(), "databases");
   let best: string | undefined;
   let bestN = -1;
-  try {
-    for (const f of readdirSync(dir)) {
-      if (!f.endsWith(".db") || f === "Databases.db") continue;
-      const p = join(dir, f);
-      try {
-        const n = Number(sqlite(p, "SELECT count(*) FROM files_fts").trim());
-        if (n > bestN) { bestN = n; best = p; }
-      } catch { /* wrong schema */ }
-    }
-  } catch { /* Mendeley not installed */ }
+  for (const dir of dbSearchDirs()) {
+    try {
+      for (const f of readdirSync(dir)) {
+        if (!f.endsWith(".db") || f === "Databases.db") continue;
+        const p = join(dir, f);
+        try {
+          const n = Number(sqlite(p, "SELECT count(*) FROM files_fts").trim());
+          if (n > bestN) { bestN = n; best = p; }
+        } catch { /* wrong schema */ }
+      }
+    } catch { /* this location not present */ }
+  }
   return best;
 }
 
 export function resolveMendeleyPaths(config: Config): { dbPath?: string; userfilesPath: string } {
   const m = config.settings.mendeley;
+  // Trust a saved path only if it still exists — Mendeley updates can relocate
+  // the DB (e.g. into `mrm/`), leaving a stale path that should fall back to
+  // auto-detection rather than reporting "not found".
+  const savedDb = m.dbPath && existsSync(m.dbPath) ? m.dbPath : undefined;
+  const savedUserfiles = m.userfilesPath && existsSync(m.userfilesPath) ? m.userfilesPath : undefined;
   return {
-    dbPath: m.dbPath ?? findMendeleyDb(),
-    userfilesPath: m.userfilesPath ?? join(mendeleyDir(), "userfiles"),
+    dbPath: savedDb ?? findMendeleyDb(),
+    userfilesPath: savedUserfiles ?? findUserfiles(),
   };
 }
 
