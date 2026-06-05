@@ -3,6 +3,7 @@ import { ArrowLeft, NotebookPen } from "lucide-react";
 import { listNotes } from "@/app/actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { SyncVaultButton } from "@/components/notes/sync-vault-button";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +22,13 @@ export default async function NotesPage() {
       <Link href="/" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" /> Dashboard
       </Link>
-      <h1 className="mb-1 text-xl font-semibold tracking-tight">Notes</h1>
-      <p className="mb-8 text-sm text-muted-foreground">{notes.length} notes in your vault (tracked by the app)</p>
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="mb-1 text-xl font-semibold tracking-tight">Notes</h1>
+          <p className="text-sm text-muted-foreground">{notes.length} notes in your vault (tracked by the app)</p>
+        </div>
+        <SyncVaultButton />
+      </div>
 
       {notes.length === 0 ? (
         <Card>
