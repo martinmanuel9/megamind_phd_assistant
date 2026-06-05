@@ -224,6 +224,7 @@ export interface DocumentSummary {
   kind: string;
   status: string;
   created_at: string;
+  collection_id: string | null;
 }
 
 export interface McpServerView extends McpStatus {
@@ -535,7 +536,7 @@ export async function listDocuments(): Promise<DocumentSummary[]> {
   const db = createServiceClient(config);
   const { data, error } = await db
     .from("documents")
-    .select("id, title, authors, kind, status, created_at")
+    .select("id, title, authors, kind, status, created_at, collection_id")
     .order("created_at", { ascending: false })
     .limit(200);
   if (error) return [];

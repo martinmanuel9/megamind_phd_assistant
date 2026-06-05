@@ -41,6 +41,7 @@ export async function POST(req: Request) {
       doi: str("doi"),
       published: str("published"),
       venue: str("venue"),
+      collectionId: str("collectionId"),
     });
 
     return Response.json({
