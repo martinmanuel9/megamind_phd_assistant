@@ -7,7 +7,7 @@ import { join } from "node:path";
  * project. Layered defenses, weakest → strongest:
  *   1. string check    — reject "..", leading "/" or "~"
  *   2. realpath check  — resolve symlinks; result must be under the vault root
- *   3. write allowlist — writes must land in one of the configured folders
+ *   3. hidden-dir check — writes may land in any non-hidden folder in the vault
  * (A 4th OS-level boundary is added by the process sandbox / least-privilege
  *  user running the server.)
  */
@@ -67,7 +67,9 @@ export function ensureVaultLayout(root: string, writeDirs: string[]): void {
 
 /**
  * Resolve a vault-relative path to an absolute path, refusing anything that
- * escapes the vault. When forWrite, the parent must be one of writeDirs.
+ * escapes the vault. When forWrite, the parent may be any non-hidden folder
+ * inside the vault (the writeDirs param is retained for API compatibility but
+ * is no longer consulted for the write decision).
  */
 export function resolveInsideVault(
   vaultRoot: string,
@@ -103,11 +105,13 @@ export function resolveInsideVault(
   }
 
   if (opts.forWrite) {
-    const allowed = opts.writeDirs.map((d) => join(realRoot, d));
-    if (!allowed.includes(parentReal)) {
-      throw new OutsideVaultError(
-        `writes only allowed in [${opts.writeDirs.join(", ")}]; parent was ${parentReal}`,
-      );
+    // Writes may land in ANY folder inside the vault, except hidden dirs
+    // (.obsidian, .git, .trash, dotfiles). The realpath/.. /outside-root checks
+    // above remain the strong boundary.
+    const rel = parentReal.slice(realRoot.length).replace(/^\//, "");
+    const hidden = rel.split("/").some((seg) => seg.startsWith("."));
+    if (hidden) {
+      throw new OutsideVaultError(`writes not allowed in hidden folders: ${rel}`);
     }
   }
 

@@ -65,11 +65,25 @@ test("resolveInsideVault rejects absolute and ~ paths", () => {
   }
 });
 
-test("resolveInsideVault rejects writes outside the allowlist", () => {
+test("resolveInsideVault allows writes into any non-hidden in-vault folder", () => {
   const root = makeVault();
-  mkdirSync(join(root, "Other"));
+  mkdirSync(join(root, "Dissertation"));
   try {
-    assert.throws(() => resolveInsideVault(root, "Other/x.md", { forWrite: true, writeDirs: WRITE_DIRS }), OutsideVaultError);
+    const p = resolveInsideVault(root, "Dissertation/Ch3.md", { forWrite: true, writeDirs: WRITE_DIRS });
+    assert.ok(p.endsWith("/Dissertation/Ch3.md"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("resolveInsideVault rejects writes into hidden dirs", () => {
+  const root = makeVault();
+  mkdirSync(join(root, ".obsidian"), { recursive: true });
+  try {
+    assert.throws(
+      () => resolveInsideVault(root, ".obsidian/x.md", { forWrite: true, writeDirs: WRITE_DIRS }),
+      OutsideVaultError,
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
