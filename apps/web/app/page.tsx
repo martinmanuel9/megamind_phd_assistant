@@ -4,7 +4,7 @@ import { doctor, getConfig, mcpStatus } from "@lob/core";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusRow } from "@/components/status-row";
-import { ArrowRight, Database, FileText, Server, Settings2, GitBranch, BrainCircuit, Search, NotebookPen, RefreshCw, Plug, Sparkles, BookOpen } from "lucide-react";
+import { ArrowRight, Database, FileText, Server, Settings2, GitBranch, BrainCircuit, Search, NotebookPen, RefreshCw, Plug, Sparkles, BookOpen, HelpCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -115,6 +115,7 @@ export default async function Dashboard() {
         <NavCard href="/vault" icon={<GitBranch className="size-5" />} title="Vault & git" desc="Notes and GitHub sync" />
         <NavCard href="/setup" icon={<Settings2 className="size-5" />} title="Setup" desc="Supabase, vault, GitHub, models" />
         <NavCard href="/help" icon={<BookOpen className="size-5" />} title="How to use" desc="Guided walkthrough & route reference" />
+        <NavCard href="/faq" icon={<HelpCircle className="size-5" />} title="FAQ" desc="Common questions, answered" />
       </div>
     </main>
   );

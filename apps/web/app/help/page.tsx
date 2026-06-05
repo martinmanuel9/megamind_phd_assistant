@@ -12,6 +12,10 @@ import {
   Sparkles,
   Search,
   Plug,
+  HelpCircle,
+  RefreshCw,
+  Crosshair,
+  GitBranch,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -59,6 +63,12 @@ export default async function HelpPage() {
             Add sources, turn them into traceable notes, then search and cite.
           </p>
         </div>
+        <Link
+          href="/faq"
+          className="ml-auto inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <HelpCircle className="size-4" /> FAQ
+        </Link>
       </header>
 
       {/* Live setup checklist */}
@@ -93,6 +103,36 @@ export default async function HelpPage() {
               <ArrowRight className="ml-auto mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
             </Link>
           ))}
+        </CardContent>
+      </Card>
+
+      {/* What you must vs. may configure */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="text-base">What needs configuring</CardTitle>
+          <CardDescription>The essentials vs. what you can add later.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-500">
+              Required
+            </div>
+            <ul className="space-y-1.5 text-sm text-muted-foreground">
+              <li><strong className="text-foreground">Supabase</strong> — the database (local defaults pre-filled)</li>
+              <li><strong className="text-foreground">Models</strong> — Ollama endpoint + a chat model</li>
+              <li><strong className="text-foreground">Vault</strong> — your Obsidian folder path</li>
+            </ul>
+          </div>
+          <div>
+            <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Optional
+            </div>
+            <ul className="space-y-1.5 text-sm text-muted-foreground">
+              <li><strong className="text-foreground">GitHub</strong> — version &amp; sync your vault</li>
+              <li><strong className="text-foreground">Mendeley</strong> — bulk-import an existing library</li>
+              <li><strong className="text-foreground">MCP server</strong> — drive it from Perplexity/Claude/etc.</li>
+            </ul>
+          </div>
         </CardContent>
       </Card>
 
@@ -148,6 +188,14 @@ export default async function HelpPage() {
         </Step>
       </div>
 
+      {/* Use cases / playbooks */}
+      <h2 className="mb-3 text-sm font-medium text-muted-foreground">Common tasks</h2>
+      <div className="mb-8 space-y-3">
+        {USE_CASES.map((uc) => (
+          <UseCase key={uc.title} {...uc} />
+        ))}
+      </div>
+
       {/* Route reference */}
       <h2 className="mb-3 text-sm font-medium text-muted-foreground">Where everything lives</h2>
       <Card className="mb-8">
@@ -193,8 +241,9 @@ export default async function HelpPage() {
       </Card>
 
       <p className="text-sm text-muted-foreground">
-        First time installing? See <Code>INSTALL.md</Code> in the repo. Want the long-form feature
-        walkthrough? See <Code>docs/USAGE.md</Code>.
+        Have a question? See the <Link href="/faq" className="underline">FAQ</Link>. First time
+        installing? See <Code>INSTALL.md</Code> in the repo. Want the long-form feature walkthrough?
+        See <Code>docs/USAGE.md</Code>.
       </p>
     </main>
   );
@@ -210,6 +259,68 @@ const ROUTES = [
   { href: "/server", what: "Start/stop the MCP server + live logs" },
   { href: "/vault", what: "Vault git status + commit & sync" },
   { href: "/setup", what: "Supabase, vault, GitHub, models + hardware advisor" },
+  { href: "/faq", what: "Frequently asked questions" },
+];
+
+// Concrete, role-relevant playbooks. Each is a collapsible step list.
+const USE_CASES: {
+  title: string;
+  icon: React.ReactNode;
+  steps: { text: React.ReactNode; href?: string }[];
+}[] = [
+  {
+    title: "Review one paper into a traceable note",
+    icon: <Sparkles className="size-4" />,
+    steps: [
+      { text: "Upload the PDF in Documents.", href: "/documents" },
+      { text: "Open the document and click AI review." },
+      { text: "Read the generated note — each claim links to its source passage.", href: "/notes" },
+    ],
+  },
+  {
+    title: "Import your existing Mendeley library",
+    icon: <RefreshCw className="size-4" />,
+    steps: [
+      { text: "Open Mendeley sync; it auto-detects your local library.", href: "/sync" },
+      { text: "Click Sync now — only papers new since the last sync are imported." },
+      { text: "Optionally set a cadence or enable always-on background sync." },
+    ],
+  },
+  {
+    title: "Ask a question across your whole library",
+    icon: <Search className="size-4" />,
+    steps: [
+      { text: "Go to Ask and type your question.", href: "/ask" },
+      { text: "Read the answer — it's grounded in retrieved passages with [n] citations." },
+      { text: "Click Save as note to keep it as a traceable synthesis note." },
+    ],
+  },
+  {
+    title: "Verify a claim back to its exact source",
+    icon: <Crosshair className="size-4" />,
+    steps: [
+      { text: "Open a document; the Traced claims sidebar lists its claims.", href: "/documents" },
+      { text: "Click a claim to jump to the exact passage it came from." },
+      { text: "Cited by shows every note that draws on the document." },
+    ],
+  },
+  {
+    title: "Use it from Perplexity / Claude / Cursor",
+    icon: <Plug className="size-4" />,
+    steps: [
+      { text: "Start the MCP server.", href: "/server" },
+      { text: "Copy the config for your client.", href: "/connect" },
+      { text: "Restart the client — it can now call the same tools." },
+    ],
+  },
+  {
+    title: "Back up & version your notes",
+    icon: <GitBranch className="size-4" />,
+    steps: [
+      { text: "Connect a GitHub remote in Setup (one time).", href: "/setup" },
+      { text: "Open Vault & git and click Commit & sync.", href: "/vault" },
+    ],
+  },
 ];
 
 function Step({
@@ -248,6 +359,43 @@ function Step({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function UseCase({
+  title,
+  icon,
+  steps,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  steps: { text: React.ReactNode; href?: string }[];
+}) {
+  return (
+    <details className="group rounded-lg border border-border bg-card">
+      <summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-3 text-sm font-medium [&::-webkit-details-marker]:hidden">
+        <span className="text-primary">{icon}</span>
+        {title}
+        <ArrowRight className="ml-auto size-4 text-muted-foreground transition-transform group-open:rotate-90" />
+      </summary>
+      <ol className="space-y-2 border-t border-border px-5 py-3 text-sm text-muted-foreground">
+        {steps.map((s, i) => (
+          <li key={i} className="flex gap-2.5">
+            <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-medium text-foreground">
+              {i + 1}
+            </span>
+            <span>
+              {s.text}
+              {s.href ? (
+                <Link href={s.href} className="ml-1.5 text-primary hover:underline">
+                  {s.href}
+                </Link>
+              ) : null}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </details>
   );
 }
 

@@ -112,15 +112,17 @@ The everyday flow — add sources, turn them into traceable notes, then search a
 5. **Use from your AI tools**: start the server in **`/server`**, grab a config from **`/connect`**,
    and Perplexity/Claude/Codex can call the same tools.
 
-**In the app:** every screen has a **How to use** link to the built-in **`/help`** guide (live setup
-checklist + this workflow + route reference). **Full walkthrough:** see **[docs/USAGE.md](docs/USAGE.md)**.
+**In the app:** the dashboard links to the built-in **`/help`** guide (live setup checklist + this
+workflow + common-task playbooks + route reference) and an **`/faq`** page. **More:** the full
+walkthrough in **[docs/USAGE.md](docs/USAGE.md)** and the **[FAQ](docs/FAQ.md)**.
 
 ## Web routes
 
 | Route | What |
 |---|---|
 | `/` | Dashboard — live system status + workspace nav |
-| `/help` | In-app how-to guide — live setup checklist, workflow, route reference |
+| `/help` | In-app how-to guide — live setup checklist, workflow, use cases, route reference |
+| `/faq` | Frequently asked questions |
 | `/onboarding` | First-run setup wizard |
 | `/setup` | Supabase, Vault, GitHub, Models + hardware-aware model advisor |
 | `/ask` | RAG chat grounded in your library; save answers as traceable notes |
