@@ -100,7 +100,7 @@ Pull the **required embedding model** (768-dim — this dimension is load-bearin
 **chat model**:
 ```bash
 ollama pull nomic-embed-text          # required — embeddings
-ollama pull llama3.1:8b               # a starter chat model (the in-app advisor can suggest better)
+ollama pull gemma4                     # recommended chat model (tools + 128k context; the advisor can suggest others)
 ```
 
 > You don't have to guess the chat model: after setup, the **Model advisor** on `/setup` detects your

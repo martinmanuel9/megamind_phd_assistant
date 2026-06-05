@@ -52,7 +52,7 @@ env vars override it. **Never commit secrets** — settings live outside the rep
 
 ## Prerequisites (this machine)
 
-- **Ollama** running with `nomic-embed-text` (768-dim embeddings) + a chat model (e.g. `llama3.1:8b`).
+- **Ollama** running with `nomic-embed-text` (768-dim embeddings) + a chat model (recommended: `gemma4` — tools + 128k context).
 - **Local Supabase** via the Supabase CLI + Docker (`supabase start`). Apply schema with
   `supabase db reset` (or it auto-applies on first `supabase start`).
 - macOS note: this is an Apple-Silicon (arm64) Mac; Homebrew is the Intel build under Rosetta.

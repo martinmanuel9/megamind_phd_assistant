@@ -141,7 +141,7 @@ checklist + this workflow + route reference). **Full walkthrough:** see **[docs/
 ## Stack
 
 Node monorepo (TypeScript/ESM) · Next.js 15 / React 19 / Tailwind (dark) · Supabase (Postgres +
-pgvector + Storage) · Ollama (`nomic-embed-text` embeddings, `qwen2.5`/`gemma3`/`gpt-oss` chat) ·
+pgvector + Storage) · Ollama (`nomic-embed-text` embeddings, `gemma4`/`qwen2.5`/`gpt-oss` chat) ·
 `@modelcontextprotocol/sdk` over Hono. Unit-tested core with GitHub Actions CI.
 
 ## License

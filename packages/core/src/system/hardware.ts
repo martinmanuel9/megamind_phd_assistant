@@ -95,6 +95,8 @@ export interface ModelRec {
   /** Strong tool-use / agent-workflow capability. */
   agentic: boolean;
   multimodal?: boolean;
+  /** Preferred default within its budget tier, even if not the largest that fits. */
+  preferred?: boolean;
   note: string;
   fits: boolean;
   installed: boolean;
@@ -107,7 +109,8 @@ const CATALOG: Omit<ModelRec, "fits" | "installed" | "recommended">[] = [
   { name: "qwen2.5:7b", approxGB: 5, agentic: true, note: "Strong tool-use in a small footprint." },
   { name: "llama3.1:8b", approxGB: 5, agentic: true, note: "Solid general agent baseline." },
   { name: "gemma3:12b", approxGB: 8, agentic: false, multimodal: true, note: "Great synthesis + multimodal; 128k context." },
-  { name: "qwen2.5:14b", approxGB: 9, agentic: true, note: "Best balance for local agent/tool-use workflows." },
+  { name: "qwen2.5:14b", approxGB: 9, agentic: true, note: "Strong balance for local agent/tool-use workflows." },
+  { name: "gemma4:latest", approxGB: 10, agentic: true, multimodal: true, preferred: true, note: "Newest Gemma — tools + thinking, 128k context, multimodal. Recommended default." },
   { name: "gpt-oss:20b", approxGB: 13, agentic: true, note: "Strong reasoning + agentic; needs ~16GB free." },
   { name: "gemma3:27b", approxGB: 17, agentic: false, multimodal: true, note: "High-quality synthesis; needs ~24GB+." },
   { name: "qwen2.5:32b", approxGB: 20, agentic: true, note: "Top local agentic quality; needs ~32GB+." },
@@ -142,9 +145,11 @@ export async function getHardwareAdvice(config: Config): Promise<HardwareAdvice>
     recommended: false,
   }));
 
-  // Best agentic model that fits = the largest agentic one within budget.
+  // Pick the best agentic model that fits. Prefer an explicitly `preferred`
+  // model (newest-generation default) when one fits; otherwise fall back to the
+  // largest agentic model within budget.
   const agenticFits = recs.filter((m) => m.agentic && m.fits).sort((a, b) => b.approxGB - a.approxGB);
-  const best = agenticFits[0];
+  const best = agenticFits.find((m) => m.preferred) ?? agenticFits[0];
   if (best) best.recommended = true;
 
   // Sort for display: recommended first, then fits, then by size desc.
