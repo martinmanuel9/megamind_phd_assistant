@@ -16,3 +16,6 @@ export * from "./system/hardware.js";
 export * from "./setup/init.js";
 export * from "./agents/personas.js";
 export * from "./agents/templates.js";
+export * from "./agents/run.js";
+export * from "./agents/artifact.js";
+export * from "./agents/prompts.js";
