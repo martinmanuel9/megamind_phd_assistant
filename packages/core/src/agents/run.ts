@@ -186,7 +186,9 @@ export async function runReview(
       : input.singlePersonaId ? byId.get(input.singlePersonaId) : undefined;
   const collectionId = collectionScopeOf(firstPersona);
 
-  if (input.addArtifactToRepo) {
+  // A "document" artifact is already in the repository (it was uploaded); only
+  // ingest note/text artifacts so we don't create a duplicate row.
+  if (input.addArtifactToRepo && input.artifact.kind !== "document") {
     await ingestMarkdown(db, model, artifact.title, artifact.text, collectionId);
   }
   if (input.addReviewToRepo) {
