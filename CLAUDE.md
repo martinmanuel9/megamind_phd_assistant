@@ -23,6 +23,8 @@ packages/core/        @lob/core — all shared logic (server-only; uses node fs 
     rag/              chunk (recursive), ingest (register/ingest/ragQuery)
     storage/files.ts  Supabase Storage (documents bucket) — portable local↔hosted
     documents/        process (upload pipeline), review (AI review)
+    agents/           personas (settings-backed) + review engine (run/prompts/artifact)
+    collections.ts    repository collections (group documents; scope grounding)
     process/mcp.ts    spawn/stop/status/logs for the MCP server
     setup/init.ts     doctor(), initVault(), access-key
 apps/mcp-server/      @lob/mcp-server — Node MCP server (Hono + @hono/mcp), ~13 tools; setup CLI
@@ -33,7 +35,10 @@ scripts/              up.sh / down.sh
 
 **Data model (traceability spine):** `documents → chunks(pgvector 768) → note_links ← notes`,
 plus a standalone `thoughts` memory table. `note_links` is the bridge: each row ties a note's
-claim → a document → the exact chunk that backs it (claim-level traceability).
+claim → a document → the exact chunk that backs it (claim-level traceability). Agentic review adds
+persona-driven **agents/workflows** (stored in settings.json) that review an artifact and write notes
+into the vault (any folder); **collections** (`documents.collection_id`) group documents and scope
+grounding.
 
 ## Running it
 

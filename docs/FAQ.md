@@ -94,6 +94,21 @@ restart it. It can then call the same tools (`rag_query`, `create_literature_not
 **Do I need the MCP server running for the web app to work?**
 No. The web app works on its own. The MCP server is only for external clients.
 
+## Agents (review workflows)
+
+**What's the difference between Committee and Debate?**
+Committee runs each persona independently and then a Chair synthesizes — good for diverse, unbiased
+takes. Debate runs personas in sequence so each sees the prior ones (Advocate → Challenger → Reviewer)
+— good for stress-testing a thesis or hypothesis.
+
+**Where do agent reviews go?**
+Into the Obsidian Vault folder you pick on the run (you can create a new folder there). They only enter
+the Supabase repository if you tick "add to open brain."
+
+**What are collections?**
+A way to group repository documents (from uploads or Mendeley). Assign documents to a collection on
+`/documents`, then scope a persona's grounding to that collection so reviews cite only those sources.
+
 ## Hosting & scaling
 
 **Can I move to a hosted database later?**
