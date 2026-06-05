@@ -1,4 +1,4 @@
-import { mkdirSync, realpathSync, statSync } from "node:fs";
+import { mkdirSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 /**
@@ -128,4 +128,48 @@ export function sanitizeTitle(raw: string): string {
   const lastSpace = window.lastIndexOf(" ");
   const cut = lastSpace > 0 ? lastSpace : MAX_TITLE_LEN;
   return cleaned.slice(0, cut).trimEnd();
+}
+
+/**
+ * List every non-hidden folder in the vault, as vault-relative POSIX paths,
+ * sorted. The filesystem is the source of truth — call this fresh to reflect
+ * changes the user made directly in Obsidian.
+ */
+export function listVaultTree(root: string): string[] {
+  const realRoot = assertVaultRoot(root);
+  const out: string[] = [];
+  const walk = (absDir: string, rel: string) => {
+    let entries;
+    try {
+      entries = readdirSync(absDir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      if (!e.isDirectory() || e.name.startsWith(".")) continue;
+      const childRel = rel ? `${rel}/${e.name}` : e.name;
+      out.push(childRel);
+      walk(join(absDir, e.name), childRel);
+    }
+  };
+  walk(realRoot, "");
+  return out.sort();
+}
+
+/**
+ * Create a folder inside the vault (recursively). Guards against escapes and
+ * hidden dirs. Returns the created vault-relative path.
+ */
+export function createVaultFolder(root: string, relDir: string): string {
+  const clean = relDir.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+  if (!clean) throw new OutsideVaultError("folder path is empty");
+  if (clean.startsWith("~")) throw new OutsideVaultError(`path must be relative: ${relDir}`);
+  const segments = clean.split("/");
+  if (segments.includes("..")) throw new OutsideVaultError(`path contains '..': ${relDir}`);
+  if (segments.some((s) => s.startsWith("."))) {
+    throw new OutsideVaultError(`hidden folders are not allowed: ${relDir}`);
+  }
+  const realRoot = assertVaultRoot(root);
+  mkdirSync(join(realRoot, clean), { recursive: true });
+  return clean;
 }

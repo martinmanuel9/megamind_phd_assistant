@@ -5,6 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   ensureVaultLayout,
+  listVaultTree,
+  createVaultFolder,
   OutsideVaultError,
   resolveInsideVault,
   sanitizeTitle,
@@ -84,6 +86,33 @@ test("resolveInsideVault rejects writes into hidden dirs", () => {
       () => resolveInsideVault(root, ".obsidian/x.md", { forWrite: true, writeDirs: WRITE_DIRS }),
       OutsideVaultError,
     );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("listVaultTree returns non-hidden folders relative to root", () => {
+  const root = makeVault();
+  mkdirSync(join(root, "Dissertation", "Ch3"), { recursive: true });
+  mkdirSync(join(root, ".obsidian"), { recursive: true });
+  try {
+    const tree = listVaultTree(root);
+    assert.ok(tree.includes("Dissertation"));
+    assert.ok(tree.includes("Dissertation/Ch3"));
+    assert.ok(!tree.some((d) => d.startsWith(".obsidian")));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("createVaultFolder makes a nested folder and rejects escapes", () => {
+  const root = makeVault();
+  try {
+    const rel = createVaultFolder(root, "Course — Methods/HW2");
+    assert.equal(rel, "Course — Methods/HW2");
+    assert.ok(listVaultTree(root).includes("Course — Methods/HW2"));
+    assert.throws(() => createVaultFolder(root, "../escape"), OutsideVaultError);
+    assert.throws(() => createVaultFolder(root, ".hidden"), OutsideVaultError);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
