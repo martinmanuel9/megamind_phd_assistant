@@ -28,6 +28,9 @@ document repository with RAG.
 - **Connect any MCP client** — generated configs for Claude Code, Claude Desktop, Cursor, Codex,
   Perplexity.
 - **Agentic review** — define persona agents (advisor, professor, peer reviewer, committee) and run Committee/Debate workflows over a draft; each agent's review and a synthesis are written into your Obsidian Vault, optionally grounded in a collection and optionally saved to the repository.
+- **Vault note indexing** — your Obsidian notes (even ones written directly in Obsidian) show up in
+  `/notes` and, with one **Sync vault** click, are embedded so `/ask`, `/search`, and agents can
+  ground in them.
 - **Autonomous** — scheduled Mendeley sync (in-app heartbeat or always-on launchd agent) and vault
   GitHub sync.
 
@@ -129,7 +132,7 @@ walkthrough in **[docs/USAGE.md](docs/USAGE.md)** and the **[FAQ](docs/FAQ.md)**
 | `/ask` | RAG chat grounded in your library; save answers as traceable notes |
 | `/search` | Semantic search across documents + memory |
 | `/documents` (`/[id]`) | Upload, manage; viewer with click-through claim→passage traceability |
-| `/notes` (`/[id]`) | Read your literature notes (rendered Markdown) |
+| `/notes` (`/[id]`) | Read your literature notes; **Sync vault** indexes Obsidian-authored notes |
 | `/connect` | Copy-paste MCP configs for Claude/Perplexity/Codex/Cursor |
 | `/sync` | Mendeley access, sync, cadence, always-on scheduling |
 | `/server` | Start/stop the MCP server + live logs + auto-start |

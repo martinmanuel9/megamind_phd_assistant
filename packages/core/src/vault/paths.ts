@@ -157,6 +157,31 @@ export function listVaultTree(root: string): string[] {
 }
 
 /**
+ * List every non-hidden Markdown file in the vault, as vault-relative POSIX
+ * paths, sorted. Companion to listVaultTree (which lists folders).
+ */
+export function listVaultMarkdown(root: string): string[] {
+  const realRoot = assertVaultRoot(root);
+  const out: string[] = [];
+  const walk = (absDir: string, rel: string) => {
+    let entries;
+    try {
+      entries = readdirSync(absDir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      if (e.name.startsWith(".")) continue;
+      const childRel = rel ? `${rel}/${e.name}` : e.name;
+      if (e.isDirectory()) walk(join(absDir, e.name), childRel);
+      else if (e.isFile() && /\.md$/i.test(e.name)) out.push(childRel);
+    }
+  };
+  walk(realRoot, "");
+  return out.sort();
+}
+
+/**
  * Create a folder inside the vault (recursively). Guards against escapes and
  * hidden dirs. Returns the created vault-relative path.
  */

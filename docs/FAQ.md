@@ -85,6 +85,10 @@ structural (RAG-resolved), not invented by the model.
 On a document page (`/documents` → a document), the *Traced claims* sidebar lets you click a claim to
 jump to its passage; passages with a *cited* badge show which notes reference them.
 
+**Do notes I write directly in Obsidian show up?**
+Yes. `/notes` mirrors the vault on app load. Click **Sync vault** to also embed them so they're
+searchable and usable as grounding. (Auto-generated source pointer notes are skipped from embedding.)
+
 ## Connecting AI tools (MCP)
 
 **How do I use this from Perplexity / Claude / Cursor / Codex?**

@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { StatusRow } from "@/components/status-row";
 import { ArrowRight, Database, FileText, Server, Settings2, GitBranch, BrainCircuit, Search, NotebookPen, RefreshCw, Plug, Sparkles, BookOpen, HelpCircle, Bot } from "lucide-react";
+import { reconcileNotesAction } from "@/app/actions";
+import { SyncVaultButton } from "@/components/notes/sync-vault-button";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +14,8 @@ export default async function Dashboard() {
   const report = await doctor();
   // First-run: send brand-new users to the guided onboarding wizard.
   if (!report.onboarded) redirect("/onboarding");
+  // Keep /notes mirroring the vault (cheap, best-effort; never blocks render).
+  await reconcileNotesAction();
   const config = getConfig();
   const mcp = mcpStatus();
 
@@ -45,6 +49,7 @@ export default async function Dashboard() {
           >
             <BookOpen className="size-4" /> How to use
           </Link>
+          <SyncVaultButton />
           <Badge variant={allReady ? "success" : "destructive"}>
             {allReady ? "Ready" : "Setup needed"}
           </Badge>
