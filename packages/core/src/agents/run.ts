@@ -2,8 +2,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ModelClient } from "../embeddings/client.js";
 import type { Config } from "../config.js";
 import type { Persona, Workflow } from "../settings.js";
-import { ragQuery } from "../rag/ingest.js";
-import { writeMarkdownNote, NoteExistsError } from "../vault/notes.js";
+import { ragQuery, registerDocument, ingestDocument } from "../rag/ingest.js";
+import { writeMarkdownNote, NoteExistsError, readNote } from "../vault/notes.js";
 import { sanitizeTitle } from "../vault/paths.js";
 import { resolveArtifactText, type ArtifactInput, type ResolvedArtifact } from "./artifact.js";
 import { buildSystemPrompt, buildUserPrompt } from "./prompts.js";
@@ -110,6 +110,24 @@ async function writeStepNote(
   throw new Error("could not find a free filename for review note");
 }
 
+/** Register + embed a Markdown body as a repository document under a collection. */
+async function ingestMarkdown(
+  db: SupabaseClient, model: ModelClient, title: string, body: string, collectionId: string | null,
+): Promise<void> {
+  const doc = await registerDocument(db, {
+    title, kind: "note", mimeType: "text/markdown",
+    bytes: new TextEncoder().encode(body),
+    metadata: { source: "agent-review" },
+  });
+  if (collectionId) await db.from("documents").update({ collection_id: collectionId }).eq("id", doc.id);
+  await ingestDocument(db, model, doc.id, body);
+}
+
+function collectionScopeOf(p?: Persona): string | null {
+  if (!p || p.grounding.scope === "all") return null;
+  return p.grounding.scope.collectionId;
+}
+
 export async function runReview(
   db: SupabaseClient,
   model: ModelClient,
@@ -159,6 +177,23 @@ export async function runReview(
   const notes: { persona: string; relPath: string; error?: boolean }[] = [];
   for (const step of outputs) {
     notes.push(await writeStepNote(db, config, artifact.title, input.targetDir, step));
+  }
+
+  // Optional: add to open brain (Supabase repository).
+  const firstPersona =
+    input.workflow && input.workflow.steps.length
+      ? byId.get(input.workflow.steps[0]!.personaId)
+      : input.singlePersonaId ? byId.get(input.singlePersonaId) : undefined;
+  const collectionId = collectionScopeOf(firstPersona);
+
+  if (input.addArtifactToRepo) {
+    await ingestMarkdown(db, model, artifact.title, artifact.text, collectionId);
+  }
+  if (input.addReviewToRepo) {
+    for (const step of outputs) {
+      const note = notes.find((n) => n.persona === step.name);
+      if (note) await ingestMarkdown(db, model, `${artifact.title} — ${step.name}`, readNote(config, note.relPath), collectionId);
+    }
   }
 
   return { notes, artifactTitle: artifact.title };
