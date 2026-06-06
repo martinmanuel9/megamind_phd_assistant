@@ -132,13 +132,19 @@ export function mendeleyOverview(config: Config): MendeleyOverview {
 
   let dbReadable = false;
   let libraryCount = 0;
+  let dbError: string | undefined;
   if (dbFound && sqliteAvailable) {
     try {
       libraryCount = Number(
         sqlite(dbPath!, "SELECT count(*) FROM files_fts f LEFT JOIN documents_fts d ON f.document_id = d.id").trim(),
       );
       dbReadable = true;
-    } catch { /* locked or wrong schema */ }
+    } catch (e) {
+      // Surface the real SQLite reason (locked / no such table / encrypted) so
+      // the user isn't left guessing. execFileSync puts it on .stderr.
+      const stderr = (e as { stderr?: Buffer }).stderr?.toString().trim();
+      dbError = (stderr || (e as Error).message).split("\n").map((s) => s.trim()).filter(Boolean).pop();
+    }
   }
 
   let pdfCount = 0;
@@ -152,7 +158,7 @@ export function mendeleyOverview(config: Config): MendeleyOverview {
     : !dbFound
       ? "Mendeley database not found — set the path below"
       : !dbReadable
-        ? "database found but unreadable (is Mendeley open and locking it?)"
+        ? `database found but unreadable${dbError ? `: ${dbError}` : ""} — if Mendeley is open, quit it (⌘Q) and retry`
         : !userfilesExists
           ? "userfiles folder not found — set the path below"
           : undefined;
