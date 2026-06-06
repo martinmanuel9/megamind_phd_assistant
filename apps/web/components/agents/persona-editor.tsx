@@ -254,7 +254,7 @@ export function PersonaEditor({
           <div>
             <CardTitle>Personas</CardTitle>
             <CardDescription>
-              Reviewer archetypes with individual stances, rubrics, and grounding.
+              Click a persona to view &amp; edit it. Use Copy to spin off a variant, then Save.
             </CardDescription>
           </div>
           <Button
@@ -303,10 +303,20 @@ export function PersonaEditor({
               onCancel={() => setEditing(null)}
             />
           ) : (
-            // Read-only row
+            // Read-only row — click anywhere to open the editor
             <div
               key={p.id}
-              className="flex items-center justify-between rounded-md border border-border px-4 py-3"
+              role="button"
+              tabIndex={0}
+              onClick={() => { setEditing(p); setCreatingNew(false); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setEditing(p);
+                  setCreatingNew(false);
+                }
+              }}
+              className="flex cursor-pointer items-center justify-between rounded-md border border-border px-4 py-3 transition-colors hover:bg-accent/40"
             >
               <div className="flex min-w-0 items-center gap-3">
                 <span className="truncate text-sm font-medium">{p.name}</span>
@@ -317,22 +327,24 @@ export function PersonaEditor({
                   </Badge>
                 )}
               </div>
-              <div className="ml-4 flex shrink-0 items-center gap-1.5">
+              {/* Stop row-click from firing when using the action buttons */}
+              <div className="ml-4 flex shrink-0 items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                 <Button
                   size="sm"
                   variant="ghost"
-                  title="Edit"
+                  title="Edit this persona"
                   onClick={() => { setEditing(p); setCreatingNew(false); }}
                 >
-                  <Pencil className="size-3.5" />
+                  <Pencil className="size-3.5" /> Edit
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => duplicate(p)} title="Duplicate">
-                  <Copy className="size-3.5" />
+                <Button size="sm" variant="ghost" title="Copy to a new persona" onClick={() => duplicate(p)}>
+                  <Copy className="size-3.5" /> Copy
                 </Button>
                 {!p.builtin && (
                   <Button
                     size="sm"
                     variant="ghost"
+                    title="Delete this persona"
                     disabled={pending}
                     onClick={() => handleDelete(p.id)}
                   >
