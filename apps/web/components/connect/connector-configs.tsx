@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { McpConnectionInfo } from "@/app/actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Copy, Eye, EyeOff } from "lucide-react";
+import { Check, Copy, Eye, EyeOff, CircleCheck, CircleAlert, Laptop } from "lucide-react";
 
 interface Client {
   id: string;
@@ -61,7 +62,7 @@ const CLIENTS: Client[] = [
     name: "Codex CLI",
     location: "~/.codex/config.toml",
     lang: "toml",
-    note: "stdio bridge via mcp-remote.",
+    note: "stdio bridge via mcp-remote (needs Node/npx on PATH). Restart Codex after editing config.toml.",
     config: (url) => `[mcp_servers.megamind]
 command = "npx"
 args = ["-y", "mcp-remote", "${url}"]`,
@@ -105,14 +106,39 @@ function CodeBlock({ text, masked, lang }: { text: string; masked: string; lang:
   );
 }
 
-export function ConnectorConfigs({ info }: { info: McpConnectionInfo }) {
+export function ConnectorConfigs({
+  info,
+  running,
+  lanIp,
+}: {
+  info: McpConnectionInfo;
+  running: boolean;
+  lanIp?: string;
+}) {
   const [reveal, setReveal] = useState(false);
   const realUrl = info.url;
   const maskedUrl = `http://${info.host}:${info.port}/?key=${reveal ? info.accessKey : "••••••••"}`;
   const mask = (s: string) => (reveal ? s : s.split(info.accessKey).join("••••••••"));
+  const lanUrl = lanIp ? realUrl.replace(`//${info.host}:`, `//${lanIp}:`) : undefined;
 
   return (
     <div className="space-y-5">
+      {/* Server status — the #1 reason a client can't connect */}
+      {running ? (
+        <div className="flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm">
+          <CircleCheck className="size-4 shrink-0 text-emerald-500" />
+          <span>MCP server is <strong>running</strong> on port {info.port} — clients can connect.</span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
+          <CircleAlert className="size-4 shrink-0 text-destructive" />
+          <span>
+            MCP server is <strong>stopped</strong> — start it on{" "}
+            <Link href="/server" className="underline">/server</Link> or clients can&apos;t connect.
+          </span>
+        </div>
+      )}
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -136,6 +162,39 @@ export function ConnectorConfigs({ info }: { info: McpConnectionInfo }) {
             HTTP (Streamable MCP). stdio-only clients use the <code className="font-mono">mcp-remote</code> bridge
             (auto-installed by <code className="font-mono">npx</code>). Requires Node on the client machine.
           </p>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">Test it from a terminal (200/406 = reachable, 401 = wrong key, 000 = server down):</p>
+            <CodeBlock
+              text={`curl -s -o /dev/null -w "%{http_code}\\n" "${realUrl}"`}
+              masked={mask(`curl -s -o /dev/null -w "%{http_code}\\n" "${realUrl}"`)}
+              lang="sh"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Connecting from another computer */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Laptop className="size-4" /> Connecting from another computer?
+          </CardTitle>
+          <CardDescription>
+            The configs below use <code className="font-mono">{info.host}</code> — that only works on
+            this machine.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2 text-xs text-muted-foreground">
+          <p>To connect a client on a different device on your network:</p>
+          <ol className="ml-4 list-decimal space-y-1">
+            <li>Set <code className="font-mono">MCP_HOST=0.0.0.0</code> (e.g. in <code className="font-mono">.env</code>) and restart the server on <Link href="/server" className="underline">/server</Link>.</li>
+            <li>
+              Use this machine&apos;s LAN address instead of <code className="font-mono">{info.host}</code>
+              {lanIp ? <> — detected: <code className="font-mono">{lanIp}</code></> : null}.
+            </li>
+            <li>Both devices on the same network; port {info.port} not firewalled.</li>
+          </ol>
+          {lanUrl ? <CodeBlock text={lanUrl} masked={mask(lanUrl)} lang="url" /> : null}
         </CardContent>
       </Card>
 
